@@ -1,12 +1,11 @@
-import React from "react";
+// src/pages/HomePage.tsx
+import React from 'react'
+import HeroSection from '../components/home/HeroSection'
 
-const Home: React.FC = () => {
+export default function HomePage() {
     return (
-        <div className="flex flex-col items-center justify-center h-screen bg-gray-900 text-amber-500 min-h-screen">
-            <h1 className="text-4xl font-bold mb-4">Welcome to My App</h1>
-            <p className="text-lg text-gray-700">This is the home page.</p>
-        </div>
-    );
+        <main className="flex flex-col items-center justify-center min-h-screen bg-black text-white">
+            <HeroSection />
+        </main>
+    )
 }
-
-export default Home;

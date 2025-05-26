@@ -24,7 +24,7 @@ const Navbar: React.FC = () => {
                     : 'bg-transparent py-6'}
       `}
         >
-            <div className="container mx-auto flex items-center justify-between px-6">
+            <div className="flex items-center justify-around px-4">
                 {/* Logo */}
                 <ViewTransitionLink to="/" className="flex items-center space-x-3">
                     <img src={LogoIcon} alt="Eclypse Icon" className="w-6 h-6" />
