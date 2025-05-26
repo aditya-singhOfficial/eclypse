@@ -1,16 +1,26 @@
-// src/components/HeroSection.tsx
-import { useEffect, useRef } from 'react'
-import { motion } from 'framer-motion'
-// import { Link } from 'react-router-dom'
-import videoFallback from '../../assets/videos/hero-poster.png'
-import video from '../../assets/videos/hero.mp4'
-// import LogoIcon from '../../assets/logo.jpg'
-import LogoText from '../../assets/logo-text.svg'
-import ViewTransitionLink from '../ViewTransitionLink'
+"use client";
+import React, { useEffect, useRef } from 'react';
+import { motion } from 'framer-motion';
+import videoFallback from '../../assets/videos/hero-poster.png';
+import video from '../../../public/hero.mp4';
+import LogoText from '../../assets/logo-text.svg';
+import ViewTransitionLink from '../ViewTransitionLink';
 
-export default function HeroSection() {
-  const videoRef = useRef<HTMLVideoElement>(null)
+const HeroSection: React.FC = () => {
+  const videoRef = useRef<HTMLVideoElement>(null);
 
+  useEffect(() => {
+    const vid = videoRef.current;
+    if (vid) {
+      vid.muted = true;
+      const playPromise = vid.play();
+      if (playPromise !== undefined) {
+        playPromise.catch((err) => {
+          console.warn('Hero video play prevented:', err);
+        });
+      }
+    }
+  }, []);
 
   const textVariants = {
     hidden: { opacity: 0, y: 20 },
@@ -23,36 +33,23 @@ export default function HeroSection() {
         ease: 'easeOut',
       },
     }),
-  }
-  useEffect(() => {
-    const vid = videoRef.current
-    if (vid) {
-      const playPromise = vid.play()
-      if (playPromise !== undefined) {
-        playPromise.catch((err) => {
-          console.warn('Hero video prevented:', err)
-        })
-      }
-    }
-  }, [])
+  };
 
   return (
     <div className="min-h-screen bg-black flex flex-col mt-36 md:mt-40 lg:mt-44 relative overflow-hidden">
-
       {/* Brand Name & Year */}
       <div className="flex justify-between items-start px-6 md:px-12 lg:px-16 py-0 mb-3">
-        {/* Brand Name */}
         <motion.img
           className="text-5xl sm:text-6xl lg:text-7xl text-white font-extralight tracking-normal leading-none"
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{
-            type: "spring",
+            type: 'spring',
             stiffness: 100,
             damping: 20,
             bounce: 0.3,
             duration: 0.8,
-            delay: 0.2
+            delay: 0.2,
           }}
           src={LogoText}
           alt="Eclypse Logo Text"
@@ -61,21 +58,22 @@ export default function HeroSection() {
           loading="lazy"
         />
 
-        {/* Year */}
         <motion.div
           className="text-2xl sm:text-3xl lg:text-4xl text-white font-light tracking-tight mt-10"
           initial={{ opacity: 0, x: 20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{
-            type: "spring",
+            type: 'spring',
             stiffness: 100,
             damping: 20,
             bounce: 0.3,
             duration: 0.8,
-            delay: 0.4
+            delay: 0.4,
           }}
         >
-          <span className="text-4xl sm:text-5xl lg:text-3xl font-bold">&copy;&nbsp;{new Date().getFullYear()}</span>
+          <span className="text-4xl sm:text-5xl lg:text-3xl font-bold">
+            &copy;&nbsp;{new Date().getFullYear()}
+          </span>
         </motion.div>
       </div>
 
@@ -111,15 +109,11 @@ export default function HeroSection() {
             variants={textVariants}
             custom={0}
           >
-            Rooted in a philosophy of quiet luxury, our garments are designed to speak
-            softly in cut, in movement, in presence.
+            Rooted in a philosophy of quiet luxury, our garments are designed to
+            speak softly in cut, in movement, in presence.
           </motion.p>
 
-          <motion.div
-            variants={textVariants}
-            custom={1}
-            className="inline-block"
-          >
+          <motion.div variants={textVariants} custom={1} className="inline-block">
             <ViewTransitionLink
               to="/about"
               className="text-white border-b border-white py-0.5 inline-flex items-center group transition-colors duration-300 hover:text-gray-300"
@@ -143,5 +137,7 @@ export default function HeroSection() {
         </motion.div>
       </div>
     </div>
-  )
+  );
 }
+
+export default HeroSection;

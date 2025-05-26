@@ -1,4 +1,4 @@
-// src/components/Navbar.tsx
+"use client";
 import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import LogoIcon from '../assets/logo.jpg'

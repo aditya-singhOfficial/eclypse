@@ -2,10 +2,12 @@
 import React from 'react'
 import HeroSection from '../components/home/HeroSection'
 
-export default function HomePage() {
+const HomePage:React.FC=()=> {
     return (
         <main className="flex flex-col items-center justify-center min-h-screen bg-black text-white">
             <HeroSection />
         </main>
     )
 }
+
+export default HomePage
