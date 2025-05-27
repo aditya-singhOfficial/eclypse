@@ -1,6 +1,7 @@
 // src/pages/HomePage.tsx
 import React from "react";
 import HeroSection from "../components/home/HeroSection";
+import MediaGrid from "../components/home/MediaGrid.tsx";
 
 const HomePage: React.FC = () => {
     return (
@@ -9,6 +10,7 @@ const HomePage: React.FC = () => {
         >
             <div className="w-full max-w-7xl">
                 <HeroSection/>
+                <MediaGrid/>
             </div>
         </main>
     );
