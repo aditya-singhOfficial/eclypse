@@ -1,1 +1,27 @@
 @import "tailwindcss";
+
+/* in your global CSS or Tailwind plugin */
+.scrollbar-none::-webkit-scrollbar {
+    display: none;
+}
+.scrollbar-none {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+.scrollbar-thin::-webkit-scrollbar {
+    width: 0.25rem;
+}
+.scrollbar-thin::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+.scrollbar-thin::-webkit-scrollbar-thumb {
+    background: #888;
+}
+
+.scrollbar-track-black::-webkit-scrollbar-track {
+    background: #000;
+}
+.scrollbar-track-black::-webkit-scrollbar-thumb {
+    background: #888;
+}

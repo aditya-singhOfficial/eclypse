@@ -1,8 +1,7 @@
 "use client";
-import React, { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import React, {useEffect, useState} from 'react'
+import {useNavigate} from 'react-router-dom'
 import LogoIcon from '../assets/logo.jpg'
-import LogoText from '../assets/logo-text.svg'
 import ViewTransitionLink from './ViewTransitionLink'
 
 const Navbar: React.FC = () => {
@@ -11,7 +10,7 @@ const Navbar: React.FC = () => {
 
     useEffect(() => {
         const onScroll = () => setScrolled(window.scrollY > 50)
-        window.addEventListener('scroll', onScroll, { passive: true })
+        window.addEventListener('scroll', onScroll, {passive: true})
         return () => window.removeEventListener('scroll', onScroll)
     }, [])
 
@@ -20,25 +19,24 @@ const Navbar: React.FC = () => {
             className={`
         fixed top-0 left-0 w-full z-50 transition-all duration-500
         ${scrolled
-                    ? 'bg-white/10 backdrop-blur-lg shadow-2xl py-4'
-                    : 'bg-transparent py-6'}
+                ? 'bg-white/5 backdrop-blur-2xl shadow-2xl py-4'
+                : 'bg-transparent py-6'}
       `}
         >
-            <div className="flex items-center justify-around px-4">
+            <div className="flex flex-wrap items-center justify-between md:justify-around px-4">
                 {/* Logo */}
                 <ViewTransitionLink to="/" className="flex items-center space-x-3">
-                    <img src={LogoIcon} alt="Eclypse Icon" className="w-6 h-6" />
-                    <img src={LogoText} alt="Eclypse®" className="h-6" />
+                    <img src={LogoIcon} alt="Eclypse Icon" className="w-12 h-12 rounded-md"/>
                 </ViewTransitionLink>
 
                 {/* Navigation */}
-                <nav className="flex items-center space-x-8">
+                <nav className="flex flex-wrap items-center space-x-4 md:space-x-8">
                     {['about', 'waitlist', 'cart'].map((path) => (
                         <ViewTransitionLink
                             key={path}
                             to={`/${path}`}
                             className={`
-                text-white text-xl font-bold hover:text-gray-100 transition-colors
+                text-white text-md md:text-xl font-semibold hover:text-gray-100 transition-colors
                 ${scrolled ? 'text-white/90' : 'text-white/70'}
               `}
                         >
@@ -49,10 +47,10 @@ const Navbar: React.FC = () => {
                     <button
                         onClick={() => navigate('/buy')}
                         className={`
-              text-2xl font-bold px-5 py-2 rounded-full transition-transform
+              text-2xl font-bold px-3 py-1.5 rounded-md transition-transform
               ${scrolled
-                                ? 'bg-white/90 text-black hover:bg-white'
-                                : 'bg-white text-black hover:bg-white/90'}
+                            ? 'bg-white/90 text-black hover:bg-white'
+                            : 'bg-white text-black hover:bg-white/90'}
               transform hover:scale-105
             `}
                     >
