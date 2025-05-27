@@ -2,6 +2,41 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
+// Accordion Item Component
+interface AccordionItemProps {
+    title: string;
+    children: React.ReactNode;
+}
+
+const AccordionItem: React.FC<AccordionItemProps> = ({ title, children }) => {
+    const [isOpen, setIsOpen] = useState(false);
+
+    return (
+        <div className="border-b border-gray-500">
+            <button
+                className="flex items-center justify-between w-full py-4 text-left"
+                onClick={() => setIsOpen(!isOpen)}
+                aria-expanded={isOpen}
+            >
+                <span className="text-base font-medium">{title}</span>
+                <svg
+                    className={`w-5 h-5 transition-transform ${isOpen ? 'transform rotate-180' : ''}`}
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+            </button>
+            <div
+                className={`transition-all duration-300 overflow-hidden ${isOpen ? 'max-h-96' : 'max-h-0'}`}
+            >
+                {children}
+            </div>
+        </div>
+    );
+};
+
 const productImages = [
     "/home/product/asset_1.png",
     "/home/product/asset_2.png",
@@ -74,10 +109,8 @@ const ProductShowcase: React.FC = () => {
                                     {size}
                                 </button>
                             ))}
-                        </div>
-
-                        {/* Action Buttons - Desktop order */}
-                        <div className="flex gap-4 mt-4">
+                        </div>                        {/* Action Buttons - Desktop order */}
+                        <div className="flex gap-4 mt-4 mb-8">
                             <button className="w-full border-[3px] border-gray-400 text-black py-3 text-sm rounded-md flex-1/4 cursor-pointer hover:bg-[#f63030] transition-all duration-500 hover:text-white hover:border-[#f63030] font-semibold">
                                 Add to Cart
                             </button>
@@ -86,8 +119,10 @@ const ProductShowcase: React.FC = () => {
                             </button>
                         </div>
                     </div>
+
                 </div>
-            </div>            {/* Mobile Layout */}
+
+            </div>{/* Mobile Layout */}
             <div className="md:hidden">                {/* Main Product Video - Mobile */}
                 <div className="w-full max-h-[70vh] overflow-hidden">
                     <video
@@ -144,10 +179,8 @@ const ProductShowcase: React.FC = () => {
                                 {size}
                             </button>
                         ))}
-                    </div>
-
-                    {/* Action Buttons - Mobile order (reversed from desktop) */}
-                    <div className="flex flex-col gap-3 mt-4">
+                    </div>                    {/* Action Buttons - Mobile order (reversed from desktop) */}
+                    <div className="flex flex-col gap-3 mt-4 mb-8">
                         <button className="w-full border-[3px] border-gray-400 text-black py-3 text-sm rounded-md flex-1/4 cursor-pointer hover:bg-[#f63030] transition-all duration-500 hover:text-white hover:border-[#f63030] font-semibold">
                             Add to Cart
                         </button>
@@ -155,7 +188,35 @@ const ProductShowcase: React.FC = () => {
                             Buy
                         </button>
                     </div>
+
                 </div>
+            </div>
+            {/* Product Information Accordions */}
+            <div className="mt-12">
+
+                <AccordionItem title="Size & Fit">
+                    <div className="py-4 text-sm">
+                        <p>- Regular fit</p>
+                        <p>- The model is 175cm/5'9" and wears a size Small</p>
+                        <p>- 100% Wool</p>
+                    </div>
+                </AccordionItem>
+
+                <AccordionItem title="Delivery & Returns">
+                    <div className="py-4 text-sm">
+                        <p>- Free standard delivery on orders over ₹5000</p>
+                        <p>- Standard delivery 3-5 working days</p>
+                        <p>- Free returns within 14 days</p>
+                    </div>
+                </AccordionItem>
+
+                <AccordionItem title="How This Was Made">
+                    <div className="py-4 text-sm">
+                        <p>This piece was crafted in our atelier using traditional tailoring techniques. The structured
+                            wool is sourced from sustainable providers and cut with precision to create the signature
+                            silhouette.</p>
+                    </div>
+                </AccordionItem>
             </div>
         </div>
     );
