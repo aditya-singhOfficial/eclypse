@@ -1,19 +1,33 @@
 import "dotenv/config";
-import express from "express"
+import express from "express";
 import cors from "cors";
+import { mongooseConnection } from "./config/mongoose.js";
+import authRoutes from "./routes/Authentication.js"; // ✅ Use ESM import
 
 const app = express();
 const port = process.env.PORT || 3000;
+
 app.use(cors());
 app.use(express.json());
 
+// ✅ Top-level await works in modern Node.js
+await mongooseConnection();
 
 app.get("/", (req, res) => {
     res.status(200).json({
         message: "Welcome to the API",
         version: "1.0.0",
         documentation: "https://example.com/docs"
-    })
+    });
+});
+
+app.use("/api/auth", authRoutes); // ✅ Correct usage
+
+app.use((req, res) => {
+    res.status(404).json({
+        message: "Not Found",
+        status: 404
+    });
 });
 
 app.listen(port, () => {
