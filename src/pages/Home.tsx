@@ -15,8 +15,8 @@ const HomePage: React.FC = () => {
                     content="Welcome to the home page of our website. Explore our products and services." />
                 <link rel="canonical" href="https://www.example.com/" />
             </Helmet>
-            <main
-                className="flex flex-col items-center justify-center flex-grow min-h-screen bg-black text-white px-4 sm:px-6 md:px-8 lg:px-16"
+            <div
+                className="flex flex-col items-center justify-center bg-black text-white px-4 sm:px-6 md:px-8 lg:px-16"
             >
                 <div className="w-full max-w-7xl">
                     <HeroSection />
@@ -24,7 +24,7 @@ const HomePage: React.FC = () => {
                     <ProductShowcase />
                     <Testimonials />
                 </div>
-            </main>
+            </div>
         </>
     );
 };

@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import React, {useEffect, useState} from "react";
+import {AnimatePresence, motion} from "framer-motion";
 
 // Sample testimonials data with images
 const testimonials = [
@@ -51,7 +51,7 @@ const fadeVariants = {
 };
 
 const imageVariants = {
-    inactive: { scale: 1 },
+    inactive: {scale: 1},
     active: {
         scale: 1.05,
         transition: {
@@ -63,7 +63,7 @@ const imageVariants = {
 };
 
 const progressVariants = {
-    empty: { width: 0 },
+    empty: {width: 0},
     full: {
         width: "100%",
         transition: {
@@ -120,10 +120,10 @@ const Testimonials: React.FC = () => {
                 {/* Section Title */}
                 <motion.h2
                     className="uppercase text-sm tracking-wide font-medium mb-12 md:mb-16"
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ duration: 0.5 }}
+                    initial={{opacity: 0, y: 20}}
+                    whileInView={{opacity: 1, y: 0}}
+                    viewport={{once: true}}
+                    transition={{duration: 0.5}}
                 >
                     OUR CUSTOMERS
                 </motion.h2>
@@ -141,24 +141,25 @@ const Testimonials: React.FC = () => {
                                 exit="exit"
                                 className="relative"
                             >
-                                <span className="text-6xl leading-none font-serif absolute top-0 left-0 text-gray-700">"</span>
+                                <span
+                                    className="text-6xl leading-none font-serif absolute top-0 left-0 text-gray-700">"</span>
                                 <h3 className="text-4xl font-light ml-12 mb-8 leading-relaxed">
                                     {testimonials[activeIndex].quote}
                                 </h3>
                                 <div className="ml-12 mt-10">
                                     <motion.p
                                         className="font-medium text-lg"
-                                        initial={{ opacity: 0 }}
-                                        animate={{ opacity: 1 }}
-                                        transition={{ delay: 0.3 }}
+                                        initial={{opacity: 0}}
+                                        animate={{opacity: 1}}
+                                        transition={{delay: 0.3}}
                                     >
                                         {testimonials[activeIndex].author}
                                     </motion.p>
                                     <motion.p
                                         className="text-gray-400 text-sm mt-1"
-                                        initial={{ opacity: 0 }}
-                                        animate={{ opacity: 1 }}
-                                        transition={{ delay: 0.4 }}
+                                        initial={{opacity: 0}}
+                                        animate={{opacity: 1}}
+                                        transition={{delay: 0.4}}
                                     >
                                         {testimonials[activeIndex].location}
                                     </motion.p>
@@ -176,8 +177,10 @@ const Testimonials: React.FC = () => {
                                 className="p-2 focus:outline-none transition-transform hover:scale-110"
                                 aria-label="Previous testimonial"
                             >
-                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                    <path d="M15 18L9 12L15 6" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none"
+                                     xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M15 18L9 12L15 6" stroke="white" strokeWidth="2" strokeLinecap="round"
+                                          strokeLinejoin="round"/>
                                 </svg>
                             </button>
 
@@ -186,8 +189,10 @@ const Testimonials: React.FC = () => {
                                 className="p-2 focus:outline-none transition-transform hover:scale-110"
                                 aria-label="Next testimonial"
                             >
-                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                    <path d="M9 18L15 12L9 6" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none"
+                                     xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M9 18L15 12L9 6" stroke="white" strokeWidth="2" strokeLinecap="round"
+                                          strokeLinejoin="round"/>
                                 </svg>
                             </button>
                         </div>
@@ -198,11 +203,11 @@ const Testimonials: React.FC = () => {
                                 <motion.div
                                     key={testimonial.id}
                                     className={`rounded-full overflow-hidden cursor-pointer transition-all duration-300 ${index === activeIndex
-                                            ? "w-24 h-24 border-2 border-white"
-                                            : "w-16 h-16 opacity-70 hover:opacity-90"
-                                        }`}
+                                        ? "w-24 h-24 border-2 border-white"
+                                        : "w-16 h-16 opacity-70 hover:opacity-90"
+                                    }`}
                                     onClick={() => goToSlide(index)}
-                                    whileHover={{ scale: 1.1 }}
+                                    whileHover={{scale: 1.1}}
                                     variants={imageVariants}
                                     animate={index === activeIndex ? "active" : "inactive"}
                                 >
@@ -233,12 +238,13 @@ const Testimonials: React.FC = () => {
                                 >
                                     {/* Quote with quotation mark */}
                                     <div className="relative">
-                                        <span className="text-5xl leading-none font-serif absolute top-0 left-0 text-gray-700">"</span>
-                                        <h3 className="text-xs md:text-3xl font-light ml-4 md:ml8 mb-6 leading-relaxed">
+                                        <span
+                                            className="text-5xl leading-none font-serif absolute top-0 left-0 text-gray-700">"</span>
+                                        <h3 className="text-xs md:text-3xl font-light ml-8 mb-6 leading-relaxed">
                                             {testimonials[activeIndex].quote}
                                         </h3>
                                     </div>
-                                    
+
                                     {/* Author info */}
                                     <div className="mb-4 mt-2">
                                         <p className="font-medium">{testimonials[activeIndex].author}</p>
@@ -246,9 +252,9 @@ const Testimonials: React.FC = () => {
                                     </div>
                                 </motion.div>
                             </AnimatePresence>
-                            
+
                             {/* Progress Bar */}
-                            {/* <div className="h-1 bg-gray-800 w-full mt-6 rounded-full overflow-hidden">
+                            <div className="h-1 bg-gray-800 w-full mt-6 rounded-full overflow-hidden">
                                 <motion.div
                                     className="h-full bg-white rounded-full"
                                     key={`progress-${activeIndex}`}
@@ -256,8 +262,8 @@ const Testimonials: React.FC = () => {
                                     initial="empty"
                                     animate={isPaused ? "empty" : "full"}
                                 />
-                            </div> */}
-                            
+                            </div>
+
                             {/* Navigation Controls */}
                             <div className="flex items-center mt-8 space-x-4">
                                 <button
@@ -265,38 +271,41 @@ const Testimonials: React.FC = () => {
                                     className="p-2 focus:outline-none transition-transform hover:scale-110"
                                     aria-label="Previous testimonial"
                                 >
-                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                        <path d="M15 18L9 12L15 6" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
+                                         xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M15 18L9 12L15 6" stroke="white" strokeWidth="2" strokeLinecap="round"
+                                              strokeLinejoin="round"/>
                                     </svg>
                                 </button>
-                                
+
                                 <button
                                     onClick={goToNext}
                                     className="p-2 focus:outline-none transition-transform hover:scale-110"
                                     aria-label="Next testimonial"
                                 >
-                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                        <path d="M9 18L15 12L9 6" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
+                                         xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M9 18L15 12L9 6" stroke="white" strokeWidth="2" strokeLinecap="round"
+                                              strokeLinejoin="round"/>
                                     </svg>
                                 </button>
                             </div>
                         </div>
-                        
+
                         {/* Right content: Customer images stacked vertically */}
                         <div className="w-1/3 flex flex-col items-center justify-start space-y-4">
                             {testimonials.map((testimonial, index) => (
-                                <motion.div 
-                                    key={`mobile-thumb-${testimonial.id}`} 
-                                    className={`rounded-full overflow-hidden cursor-pointer transition-all duration-300 ${
-                                        index === activeIndex 
-                                            ? "w-16 h-16 border-2 border-white" 
-                                            : "w-10 h-10 opacity-70"
+                                <motion.div
+                                    key={`mobile-thumb-${testimonial.id}`}
+                                    className={`rounded-full overflow-hidden cursor-pointer transition-all duration-300 ${index === activeIndex
+                                        ? "w-16 h-16 border-2 border-white"
+                                        : "w-10 h-10 opacity-70"
                                     }`}
                                     onClick={() => goToSlide(index)}
-                                    whileHover={{ scale: 1.05 }}
+                                    whileHover={{scale: 1.05}}
                                 >
-                                    <img 
-                                        src={testimonial.image} 
+                                    <img
+                                        src={testimonial.image}
                                         alt={testimonial.author}
                                         className="w-full h-full object-cover"
                                     />
