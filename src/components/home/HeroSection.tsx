@@ -1,8 +1,8 @@
 "use client";
 import React, {useEffect, useRef} from "react";
 import {motion} from "framer-motion";
-import videoFallback from "../../assets/videos/hero-poster.png";
-import video from "../../../public/hero.mp4";
+import videoFallback from "/home/hero-poster.png";
+import video from "/hero.mp4";
 import LogoText from "../../assets/logo-text.svg";
 import ViewTransitionLink from "../ViewTransitionLink";
 

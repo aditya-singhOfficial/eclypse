@@ -23,12 +23,13 @@ const MediaGrid: React.FC = () => (
             {/* Video spans cols 1–2 row 1 */}
             <div className="relative overflow-hidden rounded-lg col-span-2 row-span-1">
                 <video
-                    src="/src/assets/videos/media.mp4"
+                    src="/home/videos/media.mp4"
                     autoPlay
                     loop
                     muted
                     playsInline
                     className="w-full h-full object-cover"
+                    poster={"/home/hero-poster.png"}
                 />
             </div>
 
@@ -78,12 +79,13 @@ const MediaGrid: React.FC = () => (
         <div className="block md:hidden space-y-4">
             <div className="relative overflow-hidden rounded-lg">
                 <video
-                    src="/src/assets/videos/media.mp4"
+                    src="/home/videos/media.mp4"
                     autoPlay
                     loop
                     muted
                     playsInline
                     className="w-full h-full object-cover"
+                    poster={"/home/hero-poster.png"}
                 />
             </div>
             <div className="grid grid-cols-3 gap-4">
