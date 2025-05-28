@@ -45,9 +45,22 @@ const productImages = [
 
 const ProductShowcase: React.FC = () => {
     const [selectedSize, setSelectedSize] = useState<string | null>(null);
-    const nav = useNavigate()
+    const nav = useNavigate();
     const handleSizeClick = (size: string) => {
         setSelectedSize(size);
+    };
+    const handleBuyNow = () => {
+        nav("/checkout", {
+            state: {
+                itemName: "Silhouette No. 1 – Vermilion",
+                itemPrice: 7999,
+                shipping: 1400,
+                beforeTax: 6599,
+                tax: 200,
+                total: 8199,
+                selectedSize,
+            },
+        });
     };
     return (
         <div className="bg-black text-white font-sans my-10 px-4 sm:px-6 md:px-12 lg:px-16">
@@ -114,7 +127,7 @@ const ProductShowcase: React.FC = () => {
                             <button className="w-full border-[3px] border-gray-400 text-black py-3 text-sm rounded-md flex-1/4 cursor-pointer hover:bg-[#f63030] transition-all duration-500 hover:text-white hover:border-[#f63030] font-semibold">
                                 Add to Cart
                             </button>
-                            <button onClick={() => nav("/cart")} className="w-full bg-black text-white py-3 text-sm font-bold rounded-md hover:bg-[#f63030] transition-all duration-500 cursor-pointer flex-3/4">
+                            <button onClick={handleBuyNow} className="w-full bg-black text-white py-3 text-sm font-bold rounded-md hover:bg-[#f63030] transition-all duration-500 cursor-pointer flex-3/4">
                                 Buy
                             </button>
                         </div>
@@ -184,7 +197,7 @@ const ProductShowcase: React.FC = () => {
                         <button className="w-full border-[3px] border-gray-400 text-black py-3 text-sm rounded-md flex-1/4 cursor-pointer hover:bg-[#f63030] transition-all duration-500 hover:text-white hover:border-[#f63030] font-semibold">
                             Add to Cart
                         </button>
-                        <button onClick={() => nav("/cart", { viewTransition: true })} className="w-full bg-black text-white py-3 text-sm font-bold rounded-md hover:bg-[#f63030] transition-all duration-500 cursor-pointer flex-3/4">
+                        <button onClick={handleBuyNow} className="w-full bg-black text-white py-3 text-sm font-bold rounded-md hover:bg-[#f63030] transition-all duration-500 cursor-pointer flex-3/4">
                             Buy
                         </button>
                     </div>

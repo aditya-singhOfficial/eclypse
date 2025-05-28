@@ -1,18 +1,20 @@
 "use client";
-import React, {useEffect, useState} from 'react'
-import {useNavigate} from 'react-router-dom'
-import LogoIcon from '../assets/logo.jpg'
-import ViewTransitionLink from './ViewTransitionLink'
+import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import LogoIcon from '../assets/logo.jpg';
+import ViewTransitionLink from './ViewTransitionLink';
+import { useCart } from '../context/CartContext';
 
 const Navbar: React.FC = () => {
-    const [scrolled, setScrolled] = useState(false)
-    const navigate = useNavigate()
+    const [scrolled, setScrolled] = useState(false);
+    const navigate = useNavigate();
+    const { totalItems } = useCart();
 
     useEffect(() => {
-        const onScroll = () => setScrolled(window.scrollY > 50)
-        window.addEventListener('scroll', onScroll, {passive: true})
-        return () => window.removeEventListener('scroll', onScroll)
-    }, [])
+        const onScroll = () => setScrolled(window.scrollY > 50);
+        window.addEventListener('scroll', onScroll, { passive: true });
+        return () => window.removeEventListener('scroll', onScroll);
+    }, []);
 
     return (
         <header
@@ -31,21 +33,34 @@ const Navbar: React.FC = () => {
 
                 {/* Navigation */}
                 <nav className="flex flex-wrap items-center space-x-4 md:space-x-8">
-                    {['about', 'waitlist', 'cart'].map((path) => (
-                        <ViewTransitionLink
-                            key={path}
-                            to={`/${path}`}
-                            className={`
+                    <ViewTransitionLink
+                        to="/products"
+                        className={`
                 text-white text-md md:text-xl font-semibold hover:text-gray-100 transition-colors
                 ${scrolled ? 'text-white/90' : 'text-white/70'}
               `}
-                        >
-                            {path.charAt(0).toUpperCase() + path.slice(1)}
-                        </ViewTransitionLink>
-                    ))}
+                    >
+                        Products
+                    </ViewTransitionLink>
+                    
+                    {/* Cart with count */}
+                    <ViewTransitionLink
+                        to="/cart"
+                        className={`
+                text-white text-md md:text-xl font-semibold hover:text-gray-100 transition-colors relative
+                ${scrolled ? 'text-white/90' : 'text-white/70'}
+              `}
+                    >
+                        Cart
+                        {totalItems > 0 && (
+                            <span className="absolute -top-2 -right-2 bg-[#f63030] text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                                {totalItems}
+                            </span>
+                        )}
+                    </ViewTransitionLink>
 
                     <button
-                        onClick={() => navigate('/buy')}
+                        onClick={() => navigate('/products')}
                         className={`
               text-2xl font-bold px-3 py-1.5 rounded-md transition-transform
               ${scrolled
@@ -54,11 +69,12 @@ const Navbar: React.FC = () => {
               transform hover:scale-105
             `}
                     >
-                        Buy
+                        Shop
                     </button>
                 </nav>
             </div>
         </header>
-    )
-}
-export default Navbar
+    );
+};
+
+export default Navbar;
