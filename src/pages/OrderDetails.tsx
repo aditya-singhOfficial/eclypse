@@ -126,7 +126,7 @@ const OrderDetails: React.FC = () => {
             <div className="space-y-3 mb-6">
               <div className="flex justify-between">
                 <span className="text-gray-400">Subtotal</span>
-                <span>₹{order.itemPrice.toLocaleString()}</span>
+                <span>₹{order.subtotal.toLocaleString()}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-400">Shipping</span>
@@ -152,7 +152,7 @@ const OrderDetails: React.FC = () => {
                 {order.shippingAddress.apt ? `, Apt ${order.shippingAddress.apt}` : ""}
               </p>
               <p className="text-gray-300 mb-6">
-                {order.shippingAddress.state}, {order.shippingAddress.zip}
+                {order.shippingAddress.city}, {order.shippingAddress.state}, {order.shippingAddress.postalCode}, {order.shippingAddress.country}
               </p>
               
               <h3 className="font-medium mb-3">Payment Method</h3>

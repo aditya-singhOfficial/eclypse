@@ -121,7 +121,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setError(null);
         if (isAuthenticated) {
         // Use the API for authenticated users
-        await cartAPI.addToCart(item.productId, quantity, item.selectedSize);
+        await cartAPI.addToCart(item.productId, quantity, item.selectedSize!);
         // Update the entire cart with the response
         const response = await cartAPI.getCart();
         
@@ -184,7 +184,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setError(null);
         if (isAuthenticated) {
         // Use the API for authenticated users
-        await cartAPI.removeCartItem(id);
+        await cartAPI.removeItem(id);
         // Fetch updated cart
         const response = await cartAPI.getCart();
         
@@ -229,7 +229,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
         if (isAuthenticated) {
         // Use the API for authenticated users
-        await cartAPI.updateCartItem(id, quantity);
+        await cartAPI.updateItem(id, quantity);
         // Fetch updated cart
         const response = await cartAPI.getCart();
         

@@ -149,17 +149,12 @@ const paymentSchema = z.object({
 
 type PaymentFormData = z.infer<typeof paymentSchema>;
 
+import type { AddressFormData as CheckoutAddressFormData } from "./CheckoutPage";
+
 interface PaymentFormProps {
   onSubmit: (data: PaymentFormData) => void;
   onBack: () => void;
-  shippingAddress: {
-    firstName: string;
-    lastName: string;
-    street: string;
-    apt?: string;
-    state: string;
-    zip: string;
-  };
+  shippingAddress: CheckoutAddressFormData;
 }
 
 const PaymentForm: React.FC<PaymentFormProps> = ({
@@ -345,7 +340,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({
             {shippingAddress.apt ? `, Apt ${shippingAddress.apt}` : ""}
           </p>
           <p className="text-gray-300">
-            {shippingAddress.state}, {shippingAddress.zip}
+            {shippingAddress.city}, {shippingAddress.state}, {shippingAddress.postalCode}, {shippingAddress.country}
           </p>
         </div>
       )}      

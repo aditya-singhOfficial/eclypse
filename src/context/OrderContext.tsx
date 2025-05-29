@@ -11,6 +11,7 @@ export interface OrderAddress {
   street: string;
   apt?: string;
   city: string;
+  state: string;
   postalCode: string;
   country: string;
 }
@@ -55,6 +56,7 @@ interface ApiOrder {
     fullName: string;
     address: string;
     city: string;
+    state?: string; // Add optional state here
     postalCode: string;
     country: string;
   };
@@ -78,12 +80,12 @@ interface ApiError {
 
 interface OrderContextType {
   orders: Order[];
-  addOrder(
+  addOrder: (
     orderData: Omit<
       Order,
-      'id' | 'createdAt' | 'estimatedDelivery' | 'status' | 'trackingEvents'
+      'id' | 'createdAt' | 'estimatedDelivery' | 'status' | 'trackingEvents' | 'trackingId'
     >
-  ): Promise<string>;
+  ) => Promise<string | Order>; // Allow returning the full order object or just the ID
   getOrder(id: string): Order | undefined;
   getOrderByTrackingId(trackingId: string): Order | undefined;
   isLoading: boolean;
@@ -143,6 +145,8 @@ export const OrderProvider: React.FC<{ children: React.ReactNode }> = ({
         lastName: lastName || '',
         street: api.shippingAddress.address,
         city: api.shippingAddress.city,
+        // Assuming state is part of the address string or needs to be derived/added
+        state: api.shippingAddress.state || '', // Or handle appropriately if state is available
         postalCode: api.shippingAddress.postalCode,
         country: api.shippingAddress.country,
       },
@@ -193,25 +197,26 @@ export const OrderProvider: React.FC<{ children: React.ReactNode }> = ({
   }, [orders, isAuthenticated]);
 
   const addOrder = async (
-    data: Omit<Order, 'id' | 'createdAt' | 'estimatedDelivery' | 'status' | 'trackingEvents'>
-  ): Promise<string> => {
+    data: Omit<Order, 'id' | 'createdAt' | 'estimatedDelivery' | 'status' | 'trackingEvents' | 'trackingId'>
+  ): Promise<string | Order> => {
     setIsLoading(true);
     setError(null);
     try {
       if (isAuthenticated) {
         const payload = {
-          orderItems: data.items.map((i) => ({ product: i.productId, quantity: i.quantity })),
+          items: data.items.map((i) => ({ product: i.productId, quantity: i.quantity, price: i.price })), // Renamed orderItems to items and added price
           shippingAddress: {
             fullName: `${data.shippingAddress.firstName} ${data.shippingAddress.lastName}`.trim(),
             address: data.shippingAddress.street,
             city: data.shippingAddress.city,
+            // state: data.shippingAddress.state, // Removed state field as it's not in API payload
             postalCode: data.shippingAddress.postalCode,
             country: data.shippingAddress.country,
           },
           paymentMethod: data.payment.paymentMethod,
         };
         const res = await ordersAPI.place(payload);
-        const order = convertApiOrder(res.data as ApiOrder);
+        const order = convertApiOrder(res.data as unknown as ApiOrder); // Cast to unknown first, then to ApiOrder
         setOrders((prev) => [...prev, order]);
         return order.id;
       } else {

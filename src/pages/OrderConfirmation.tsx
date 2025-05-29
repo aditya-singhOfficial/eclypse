@@ -62,7 +62,7 @@ const OrderConfirmation: React.FC = () => {
               <h3 className="font-medium mb-2">Shipping Information:</h3>
               <p className="text-gray-300">{order.shippingAddress.firstName} {order.shippingAddress.lastName}</p>
               <p className="text-gray-300">{order.shippingAddress.street}{order.shippingAddress.apt ? `, Apt ${order.shippingAddress.apt}` : ''}</p>
-              <p className="text-gray-300">{order.shippingAddress.state}, {order.shippingAddress.zip}</p>
+              <p className="text-gray-300">{order.shippingAddress.city}, {order.shippingAddress.state}, {order.shippingAddress.postalCode}, {order.shippingAddress.country}</p>
             </div>
           )}
           
@@ -81,7 +81,7 @@ const OrderConfirmation: React.FC = () => {
             <h3 className="font-medium mb-2">Order Summary:</h3>
             <div className="flex justify-between mb-1">
               <span className="text-gray-300">Items:</span>
-              <span className="text-gray-300">₹{order.itemPrice.toLocaleString()}</span>
+              <span className="text-gray-300">₹{order.subtotal.toLocaleString()}</span>
             </div>
             <div className="flex justify-between mb-1">
               <span className="text-gray-300">Shipping:</span>
