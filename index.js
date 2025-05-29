@@ -48,6 +48,6 @@ app.use(errorHandler);
 
 // 4️⃣ Start server
 app.listen(PORT, () => {
-    console.log(`🚀 Server running at ${domain}:${PORT}`);
-    console.log(`📚 Swagger docs at ${domain}:${PORT}/docs`);
+    console.log(`🚀 Server running at ${domain.includes('localhost') ? `${domain}:${PORT}` : `${domain}`}`);
+    console.log(`📚 Swagger docs at ${domain.includes('localhost') ? `${domain}:${PORT}` : `${domain}`}/docs`);
 });
