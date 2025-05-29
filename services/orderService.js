@@ -24,4 +24,6 @@ export const fetchUserOrders = userId => Order.find({user: userId}).populate('it
 export const fetchUserOrderById = (userId, orderId) => Order.findOne({_id: orderId, user: userId}).populate('items.product');
 export const updateOrderStatus = (id, status) =>
     Order.findByIdAndUpdate(id, {status}, {new: true});
+export const markOrderDelivered = (id, updateData) =>
+    Order.findByIdAndUpdate(id, updateData, {new: true});
 export const deleteOrder = id => Order.findByIdAndDelete(id);

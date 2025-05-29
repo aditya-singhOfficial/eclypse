@@ -93,8 +93,7 @@ components:
         items:
           type: array
           items:
-            $ref: '#/components/schemas/CartItem'
-    Order:
+            $ref: '#/components/schemas/CartItem'    Order:
       type: object
       properties:
         _id:
@@ -116,12 +115,21 @@ components:
           type: number
         status:
           type: string
+          enum: [pending, processing, shipped, delivered, cancelled]
         paymentInfo:
           type: object
+        isDelivered:
+          type: boolean
+          default: false
+        deliveredAt:
+          type: string
+          format: date-time
         createdAt:
           type: string
+          format: date-time
         updatedAt:
           type: string
+          format: date-time
     Review:
       type: object
       properties:
@@ -145,8 +153,7 @@ components:
 security:
   - bearerAuth: []
 
-paths:
-  # AUTH ROUTES
+paths:  # AUTH ROUTES
   /api/auth/register:
     post:
       tags:
@@ -193,7 +200,7 @@ paths:
     post:
       tags:
         - Authentication
-      summary: Login existing user
+      summary: Login existing user (both admin and regular users)
       requestBody:
         required: true
         content:
@@ -227,12 +234,35 @@ paths:
         '401':
           description: Invalid credentials
 
+  /api/auth/admin/me:
+    get:
+      tags:
+        - Admin Authentication
+      summary: Check admin authentication and get admin details
+      description: Verifies the admin's token and returns user details
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Admin details retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user:
+                    $ref: '#/components/schemas/User'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden - Admin access required
   # USER ROUTES
   /api/users:
     get:
       tags:
-        - Users
+        - Admin User Management
       summary: Get all users (admin only)
+      description: Retrieves a list of all users for admin management
       security:
         - bearerAuth: []
       responses:
@@ -241,25 +271,30 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/User'
+                type: object
+                properties:
+                  users:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/User'
         '401':
           description: Unauthorized
         '403':
           description: Forbidden - Admin access required
   
-  /api/users/{id}:
+  /api/users/{userId}:
     get:
       tags:
-        - Users
-      summary: Get user by ID
+        - Admin User Management
+      summary: Get user by ID (admin only)
+      description: Retrieves details for a specific user
       parameters:
-        - name: id
+        - name: userId
           in: path
           required: true
           schema:
             type: string
+          description: The user ID
       security:
         - bearerAuth: []
       responses:
@@ -268,20 +303,29 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/User'
+                type: object
+                properties:
+                  user:
+                    $ref: '#/components/schemas/User'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden - Admin access required
         '404':
           description: User not found
     
     put:
       tags:
-        - Users
-      summary: Update user
+        - Admin User Management
+      summary: Update user (admin only)
+      description: Updates details for a specific user
       parameters:
-        - name: id
+        - name: userId
           in: path
           required: true
           schema:
             type: string
+          description: The user ID
       security:
         - bearerAuth: []
       requestBody:
@@ -296,31 +340,119 @@ paths:
                 email:
                   type: string
                   format: email
+                role:
+                  type: string
+                  enum: [user, admin]
       responses:
         '200':
           description: User updated successfully
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/User'
+                type: object
+                properties:
+                  user:
+                    $ref: '#/components/schemas/User'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden - Admin access required
         '404':
           description: User not found
     
     delete:
       tags:
-        - Users
-      summary: Delete user
+        - Admin User Management
+      summary: Delete user (admin only)
+      description: Deletes a specific user
       parameters:
-        - name: id
+        - name: userId
           in: path
           required: true
           schema:
             type: string
+          description: The user ID
       security:
         - bearerAuth: []
       responses:
         '200':
           description: User deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "User deleted successfully"
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden - Admin access required
+        '404':
+          description: User not found
+
+  /api/users/{userId}/assign-admin:
+    put:
+      tags:
+        - Admin User Management
+      summary: Assign admin role to user
+      description: Assigns admin privileges to a user
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: The user ID
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Admin role assigned successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user:
+                    $ref: '#/components/schemas/User'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden - Admin access required
+        '404':
+          description: User not found
+
+  /api/users/{userId}/revoke-admin:
+    put:
+      tags:
+        - Admin User Management
+      summary: Revoke admin role from user
+      description: Revokes admin privileges from a user
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: The user ID
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Admin role revoked successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user:
+                    $ref: '#/components/schemas/User'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden - Admin access required
         '404':
           description: User not found
 
@@ -448,13 +580,12 @@ paths:
           description: Forbidden - Admin access required
         '404':
           description: Category not found
-
   # PRODUCT ROUTES
   /api/products:
     get:
       tags:
         - Products
-      summary: Get all products
+      summary: Get all products (public)
       parameters:
         - name: category
           in: query
@@ -492,7 +623,7 @@ paths:
     
     post:
       tags:
-        - Products
+        - Admin Product Management
       summary: Create a new product (admin only)
       security:
         - bearerAuth: []
@@ -535,19 +666,47 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Product'
+                type: object
+                properties:
+                  product:
+                    $ref: '#/components/schemas/Product'
         '401':
           description: Unauthorized
         '403':
           description: Forbidden - Admin access required
 
-  /api/products/{id}:
+  /api/products/admin:
+    get:
+      tags:
+        - Admin Product Management
+      summary: Get all products (admin view)
+      description: Retrieves all products with admin-specific details
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: A list of products (admin view)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  products:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Product'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden - Admin access required
+
+  /api/products/{productId}:
     get:
       tags:
         - Products
       summary: Get product by ID
       parameters:
-        - name: id
+        - name: productId
           in: path
           required: true
           schema:
@@ -558,16 +717,19 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Product'
+                type: object
+                properties:
+                  product:
+                    $ref: '#/components/schemas/Product'
         '404':
           description: Product not found
     
     put:
       tags:
-        - Products
+        - Admin Product Management
       summary: Update product (admin only)
       parameters:
-        - name: id
+        - name: productId
           in: path
           required: true
           schema:
@@ -604,7 +766,10 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Product'
+                type: object
+                properties:
+                  product:
+                    $ref: '#/components/schemas/Product'
         '401':
           description: Unauthorized
         '403':
@@ -614,10 +779,10 @@ paths:
     
     delete:
       tags:
-        - Products
+        - Admin Product Management
       summary: Delete product (admin only)
       parameters:
-        - name: id
+        - name: productId
           in: path
           required: true
           schema:
@@ -627,6 +792,14 @@ paths:
       responses:
         '200':
           description: Product deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Product deleted successfully"
         '401':
           description: Unauthorized
         '403':
@@ -1050,3 +1223,328 @@ paths:
           description: Forbidden - Not the owner of the review or not an admin
         '404':
           description: Review not found
+
+  # ADMIN ROUTES
+  /api/auth/admin/me:
+    get:
+      tags:
+        - Admin Authentication
+      summary: Get admin user details
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Admin user details retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user:
+                    $ref: '#/components/schemas/User'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden - Admin access required
+
+  /api/admin/stats:
+    get:
+      tags:
+        - Admin Analytics
+      summary: Get comprehensive dashboard statistics
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Dashboard statistics retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  totalUsers:
+                    type: integer
+                  totalProducts:
+                    type: integer
+                  totalOrders:
+                    type: integer
+                  totalRevenue:
+                    type: number
+                  pendingOrders:
+                    type: integer
+                  completedOrders:
+                    type: integer
+                  cancelledOrders:
+                    type: integer
+                  recentOrders:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Order'
+                  recentUsers:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/User'
+                  topProducts:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        product:
+                          $ref: '#/components/schemas/Product'
+                        orderCount:
+                          type: integer
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden - Admin access required
+
+  /api/admin/stats/total-sales:
+    get:
+      tags:
+        - Admin Analytics
+      summary: Get total sales data with date filtering
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: startDate
+          in: query
+          schema:
+            type: string
+            format: date
+          description: Start date for sales data (YYYY-MM-DD)
+        - name: endDate
+          in: query
+          schema:
+            type: string
+            format: date
+          description: End date for sales data (YYYY-MM-DD)
+      responses:
+        '200':
+          description: Sales data retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  totalSales:
+                    type: number
+                  totalOrders:
+                    type: integer
+                  averageOrderValue:
+                    type: number
+                  salesByDate:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        date:
+                          type: string
+                          format: date
+                        sales:
+                          type: number
+                        orders:
+                          type: integer
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden - Admin access required
+
+  /api/users/{userId}/assign-admin:
+    put:
+      tags:
+        - Admin User Management
+      summary: Assign admin role to a user
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: User ID to assign admin role
+      responses:
+        '200':
+          description: Admin role assigned successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  user:
+                    $ref: '#/components/schemas/User'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden - Admin access required
+        '404':
+          description: User not found
+
+  /api/users/{userId}/revoke-admin:
+    put:
+      tags:
+        - Admin User Management
+      summary: Revoke admin role from a user
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: User ID to revoke admin role
+      responses:
+        '200':
+          description: Admin role revoked successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  user:
+                    $ref: '#/components/schemas/User'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden - Admin access required
+        '404':
+          description: User not found
+
+  /api/orders/admin/all:
+    get:
+      tags:
+        - Admin Order Management
+      summary: Get all orders for admin view
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+          description: Page number for pagination
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 10
+          description: Number of orders per page
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [pending, processing, shipped, delivered, cancelled]
+          description: Filter by order status
+      responses:
+        '200':
+          description: Orders retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  orders:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Order'
+                  pagination:
+                    type: object
+                    properties:
+                      page:
+                        type: integer
+                      pages:
+                        type: integer
+                      total:
+                        type: integer
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden - Admin access required
+
+  /api/orders/{orderId}/status:
+    put:
+      tags:
+        - Admin Order Management
+      summary: Update order status
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: orderId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Order ID to update
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - status
+              properties:
+                status:
+                  type: string
+                  enum: [pending, processing, shipped, delivered, cancelled]
+      responses:
+        '200':
+          description: Order status updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  order:
+                    $ref: '#/components/schemas/Order'
+        '400':
+          description: Invalid status
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden - Admin access required
+        '404':
+          description: Order not found
+
+  /api/orders/{orderId}/deliver:
+    put:
+      tags:
+        - Admin Order Management
+      summary: Mark order as delivered
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: orderId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Order ID to mark as delivered
+      responses:
+        '200':
+          description: Order marked as delivered successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  order:
+                    $ref: '#/components/schemas/Order'
+        '400':
+          description: Order cannot be marked as delivered
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden - Admin access required
+        '404':
+          description: Order not found

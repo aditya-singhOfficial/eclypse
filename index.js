@@ -14,6 +14,7 @@ import productRoutes from './routes/productRoutes.js';
 import cartRoutes from './routes/cartRoutes.js';
 import orderRoutes from './routes/orderRoutes.js';
 import reviewRoutes from './routes/reviewRoutes.js';
+import adminRoutes from './routes/adminRoutes.js';
 
 const PORT = process.env.PORT || 3000;
 const domain = process.env.DOMAIN || 'http://localhost';
@@ -31,12 +32,20 @@ app.get('/', (req, res) => {
         documentation: '/docs'
     })
 })
+
+// Auth routes (includes admin auth)
 app.use('/api/auth', authRoutes);
+
+// Core API routes
 app.use('/api/users', userRoutes);
 app.use('/api/categories', categoryRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/cart', cartRoutes);
 app.use('/api/orders', orderRoutes);
+
+// Admin routes
+app.use('/api/admin', adminRoutes);
+
 // nested reviews under products:
 app.use('/api/products/:id/reviews', reviewRoutes);
 

@@ -11,7 +11,18 @@ const orderSchema = new mongoose.Schema({
     user: {type: mongoose.Types.ObjectId, ref: 'User', required: true},
     items: [orderItemSchema],
     totalPrice: {type: Number, required: true},
-    status: {type: String, default: 'pending'},
+    status: {
+        type: String, 
+        enum: ['pending', 'processing', 'shipped', 'delivered', 'cancelled'],
+        default: 'pending'
+    },
+    orderStatus: {
+        type: String, 
+        enum: ['Pending', 'Processing', 'Shipped', 'Delivered', 'Cancelled'],
+        default: 'Pending'
+    },
+    isDelivered: {type: Boolean, default: false},
+    deliveredAt: {type: Date},
     paymentInfo: {type: Object}
 }, {timestamps: true});
 

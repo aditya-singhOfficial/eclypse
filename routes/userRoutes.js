@@ -6,20 +6,27 @@ import {
     getUser,
     getUsers,
     updateProfile,
-    updateUserByAdmin
+    updateUserByAdmin,
+    assignAdminRole,
+    revokeAdminRole
 } from '../controllers/userController.js';
 import {authorize, protect} from '../middlewares/auth.js';
 
 const router = express.Router();
 
 router.use(protect);
-router.get('/', getUsers);
+
+// User profile routes (accessible to authenticated users)
 router.get('/profile', getProfile);
 router.put('/profile', updateProfile);
 
+// Admin-only user management routes
 router.use(authorize('admin'));
-router.get('/:id', getUser);
-router.put('/:id', updateUserByAdmin);
-router.delete('/:id', deleteUser);
+router.get('/', getUsers);
+router.get('/:userId', getUser);
+router.put('/:userId', updateUserByAdmin);
+router.delete('/:userId', deleteUser);
+router.put('/:userId/assign-admin', assignAdminRole);
+router.put('/:userId/revoke-admin', revokeAdminRole);
 
 export default router;

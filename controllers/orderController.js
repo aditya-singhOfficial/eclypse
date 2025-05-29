@@ -17,6 +17,15 @@ export const listOrders = async (_, res, next) => {
     }
 };
 
+export const getAllOrdersAdmin = async (_, res, next) => {
+    try {
+        const orders = await orderSvc.fetchOrders();
+        res.json({ orders });
+    } catch (err) {
+        next(err);
+    }
+};
+
 export const listMyOrders = async (req, res, next) => {
     try {
         res.json(await orderSvc.fetchUserOrders(req.user.id));
@@ -27,7 +36,11 @@ export const listMyOrders = async (req, res, next) => {
 
 export const getOrder = async (req, res, next) => {
     try {
-        res.json(await orderSvc.fetchOrderById(req.params.id));
+        const order = await orderSvc.fetchOrderById(req.params.id || req.params.orderId);
+        if (!order) {
+            return res.status(404).json({ message: 'Order not found' });
+        }
+        res.json({ order });
     } catch (err) {
         next(err);
     }
@@ -35,7 +48,30 @@ export const getOrder = async (req, res, next) => {
 
 export const updateOrderStatus = async (req, res, next) => {
     try {
-        res.json(await orderSvc.updateOrderStatus(req.params.id, req.body.status));
+        const orderId = req.params.id || req.params.orderId;
+        const order = await orderSvc.updateOrderStatus(orderId, req.body.orderStatus || req.body.status);
+        if (!order) {
+            return res.status(404).json({ message: 'Order not found' });
+        }
+        res.json({ order });
+    } catch (err) {
+        next(err);
+    }
+};
+
+export const markOrderDelivered = async (req, res, next) => {
+    try {
+        const orderId = req.params.orderId;
+        const updateData = {
+            status: 'Delivered',
+            isDelivered: true,
+            deliveredAt: req.body.deliveredAt || new Date().toISOString()
+        };
+        const order = await orderSvc.markOrderDelivered(orderId, updateData);
+        if (!order) {
+            return res.status(404).json({ message: 'Order not found' });
+        }
+        res.json({ order });
     } catch (err) {
         next(err);
     }
@@ -43,8 +79,11 @@ export const updateOrderStatus = async (req, res, next) => {
 
 export const deleteOrder = async (req, res, next) => {
     try {
-        await orderSvc.deleteOrder(req.params.id);
-        res.json({});
+        const order = await orderSvc.deleteOrder(req.params.id);
+        if (!order) {
+            return res.status(404).json({ message: 'Order not found' });
+        }
+        res.json({ message: 'Order deleted successfully' });
     } catch (err) {
         next(err);
     }

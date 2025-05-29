@@ -21,8 +21,11 @@ export const updateProfile = async (req, res, next) => {
 
 export const getUser = async (req, res, next) => {
     try {
-        const user = await userService.getUserById(req.params.id);
-        res.json(user);
+        const user = await userService.getUserById(req.params.userId);
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+        res.json({ user });
     } catch (err) {
         next(err);
     }
@@ -30,8 +33,11 @@ export const getUser = async (req, res, next) => {
 
 export const updateUserByAdmin = async (req, res, next) => {
     try {
-        const user = await userService.updateUser(req.params.id, req.body);
-        res.json(user);
+        const user = await userService.updateUser(req.params.userId, req.body);
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+        res.json({ user });
     } catch (err) {
         next(err);
     }
@@ -39,8 +45,11 @@ export const updateUserByAdmin = async (req, res, next) => {
 
 export const deleteUser = async (req, res, next) => {
     try {
-        await userService.deleteUser(req.params.id);
-        res.json({message: 'User deleted'});
+        const user = await userService.deleteUser(req.params.userId);
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+        res.json({message: 'User deleted successfully'});
     } catch (err) {
         next(err);
     }
@@ -49,8 +58,32 @@ export const deleteUser = async (req, res, next) => {
 export const getUsers = async (_, res, next) => {
     try {
         const users = await userService.getUsers();
-        res.json(users);
+        res.json({ users });
     } catch (err) {
         next(err)
     }
 }
+
+export const assignAdminRole = async (req, res, next) => {
+    try {
+        const user = await userService.updateUser(req.params.userId, { role: 'admin' });
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+        res.json({ user });
+    } catch (err) {
+        next(err);
+    }
+};
+
+export const revokeAdminRole = async (req, res, next) => {
+    try {
+        const user = await userService.updateUser(req.params.userId, { role: 'user' });
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+        res.json({ user });
+    } catch (err) {
+        next(err);
+    }
+};
