@@ -1,0 +1,522 @@
+openapi: 3.0.3
+info:
+  title: MERN E-Commerce API
+  version: 1.0.0
+  description: |
+    Full-featured e-commerce backend with users, products, categories, carts, orders, and reviews.
+servers:
+  - url: https://api.example.com
+    description: Production
+  - url: http://localhost:3000
+    description: Local development
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    User:
+      type: object
+      properties:
+        _id:      { type: string, format: uuid }
+        name:     { type: string }
+        email:    { type: string, format: email }
+        role:     { type: string, enum: [user, admin] }
+        createdAt:{ type: string, format: date-time }
+        updatedAt:{ type: string, format: date-time }
+    Category:
+      type: object
+      properties:
+        _id:      { type: string }
+        name:     { type: string }
+    Product:
+      type: object
+      properties:
+        _id:        { type: string }
+        name:       { type: string }
+        description:{ type: string }
+        price:      { type: number, format: float }
+        category:   { $ref: '#/components/schemas/Category' }
+        images:
+          type: array
+          items:
+            type: object
+            properties:
+              url:       { type: string, format: uri }
+              public_id: { type: string }
+        createdBy:  { $ref: '#/components/schemas/User' }
+        createdAt:  { type: string, format: date-time }
+        updatedAt:  { type: string, format: date-time }
+    CartItem:
+      type: object
+      properties:
+        _id:      { type: string }
+        product:  { $ref: '#/components/schemas/Product' }
+        quantity: { type: integer }
+    Cart:
+      type: object
+      properties:
+        user:  { type: string }
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/CartItem'
+    Order:
+      type: object
+      properties:
+        _id:       { type: string }
+        user:      { $ref: '#/components/schemas/User' }
+        items:
+          type: array
+          items:
+            type: object
+            properties:
+              product:  { $ref: '#/components/schemas/Product' }
+              quantity: { type: integer }
+              price:    { type: number }
+        totalPrice:{ type: number }
+        status:    { type: string }
+        paymentInfo:
+          type: object
+        createdAt: { type: string }
+        updatedAt: { type: string }
+    Review:
+      type: object
+      properties:
+        _id:      { type: string }
+        product:  { type: string }
+        user:     { $ref: '#/components/schemas/User' }
+        rating:   { type: integer, minimum: 1, maximum: 5 }
+        comment:  { type: string }
+        createdAt:{ type: string }
+        updatedAt:{ type: string }
+
+security:
+  - bearerAuth: []
+
+paths:
+
+  /api/auth/register:
+    post:
+      summary: Register new user
+      tags: [Auth]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name,email,password]
+              properties:
+                name:     { type: string }
+                email:    { type: string, format: email }
+                password: { type: string, minLength: 6 }
+      responses:
+        201:
+          description: Created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user:  { $ref: '#/components/schemas/User' }
+                  token: { type: string }
+
+  /api/auth/login:
+    post:
+      summary: Login
+      tags: [Auth]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email,password]
+              properties:
+                email:    { type: string, format: email }
+                password: { type: string }
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user:  { $ref: '#/components/schemas/User' }
+                  token: { type: string }
+
+  /api/users/profile:
+    get:
+      summary: Get current user profile
+      tags: [Users]
+      security:
+        - bearerAuth: []
+      responses:
+        200:
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/User' }
+    put:
+      summary: Update current user
+      tags: [Users]
+      security:
+        - bearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:  { type: string }
+                email: { type: string, format: email }
+      responses:
+        200:
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/User' }
+
+  /api/categories:
+    get:
+      summary: List categories
+      tags: [Categories]
+      responses:
+        200:
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Category' }
+    post:
+      summary: Create category (admin)
+      tags: [Categories]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name]
+              properties:
+                name: { type: string }
+      responses:
+        201:
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Category' }
+
+  /api/categories/{id}:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema: { type: string }
+    get:
+      summary: Get category
+      tags: [Categories]
+      responses:
+        200:
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Category' }
+    put:
+      summary: Update category (admin)
+      tags: [Categories]
+      security:
+        - bearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name: { type: string }
+      responses:
+        200:
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Category' }
+    delete:
+      summary: Delete category (admin)
+      tags: [Categories]
+      security:
+        - bearerAuth: []
+      responses:
+        204:
+          description: No Content
+
+  /api/products:
+    get:
+      summary: List products
+      tags: [Products]
+      parameters:
+        - in: query
+          name: category
+          schema: { type: string }
+        - in: query
+          name: search
+          schema: { type: string }
+        - in: query
+          name: page
+          schema: { type: integer }
+        - in: query
+          name: limit
+          schema: { type: integer }
+      responses:
+        200:
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Product' }
+    post:
+      summary: Create product (admin)
+      tags: [Products]
+      security:
+        - bearerAuth: []
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [name,price,category]
+              properties:
+                name:        { type: string }
+                description: { type: string }
+                price:       { type: number }
+                category:    { type: string }
+                images:
+                  type: array
+                  items:
+                    type: string
+                    format: binary
+      responses:
+        201:
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Product' }
+
+  /api/products/{id}:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema: { type: string }
+    get:
+      summary: Get product
+      tags: [Products]
+      responses:
+        200:
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Product' }
+    put:
+      summary: Update product (admin)
+      tags: [Products]
+      security:
+        - bearerAuth: []
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                name:        { type: string }
+                description: { type: string }
+                price:       { type: number }
+                category:    { type: string }
+                images:
+                  type: array
+                  items:
+                    type: string
+                    format: binary
+      responses:
+        200:
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Product' }
+    delete:
+      summary: Delete product (admin)
+      tags: [Products]
+      security:
+        - bearerAuth: []
+      responses:
+        204:
+          description: No Content
+
+  /api/cart:
+    get:
+      summary: Get current user’s cart
+      tags: [Cart]
+      security:
+        - bearerAuth: []
+      responses:
+        200:
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Cart' }
+    post:
+      summary: Add item to cart
+      tags: [Cart]
+      security:
+        - bearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [productId]
+              properties:
+                productId: { type: string }
+                quantity:  { type: integer, default: 1 }
+      responses:
+        200:
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Cart' }
+    put:
+      summary: Update cart item
+      tags: [Cart]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: itemId
+          required: true
+          schema: { type: string }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                quantity: { type: integer }
+      responses:
+        200:
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Cart' }
+    delete:
+      summary: Clear cart
+      tags: [Cart]
+      security:
+        - bearerAuth: []
+      responses:
+        204:
+          description: No Content
+
+  /api/orders:
+    post:
+      summary: Create order
+      tags: [Orders]
+      security:
+        - bearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                paymentInfo: { type: object }
+      responses:
+        201:
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Order' }
+    get:
+      summary: List all orders (admin)
+      tags: [Orders]
+      security:
+        - bearerAuth: []
+      responses:
+        200:
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Order' }
+
+  /api/orders/my:
+    get:
+      summary: Get my orders
+      tags: [Orders]
+      security:
+        - bearerAuth: []
+      responses:
+        200:
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Order' }
+
+  /api/orders/{id}/status:
+    put:
+      summary: Update order status (admin)
+      tags: [Orders]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status: { type: string }
+      responses:
+        200:
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Order' }
+
+  /api/products/{id}/reviews:
+    get:
+      summary: List reviews for product
+      tags: [Reviews]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        200:
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Review' }
+    post:
+      summary: Add review
+      tags: [Reviews]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [rating]
+              properties:
+                rating:  { type: integer, minimum: 1, maximum: 5 }
+                comment: { type: string }
+      responses:
+        201:
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Review' }
