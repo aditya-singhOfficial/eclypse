@@ -16,6 +16,7 @@ import orderRoutes from './routes/orderRoutes.js';
 import reviewRoutes from './routes/reviewRoutes.js';
 
 const PORT = process.env.PORT || 3000;
+const domain = process.env.DOMAIN || 'http://localhost';
 
 await mongooseConnection();
 
@@ -24,6 +25,12 @@ app.use(cors());
 app.use(express.json());
 
 // 1️⃣ Mount your API routes
+app.get('/', (req, res) => {
+    res.status(200).json({
+        message: 'Welcome to the E-Commerce API',
+        documentation: '/docs'
+    })
+})
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/categories', categoryRoutes);
@@ -41,6 +48,6 @@ app.use(errorHandler);
 
 // 4️⃣ Start server
 app.listen(PORT, () => {
-    console.log(`🚀 Server running at http://localhost:${PORT}`);
-    console.log(`📚 Swagger docs at http://localhost:${PORT}/docs`);
+    console.log(`🚀 Server running at ${domain}:${PORT}`);
+    console.log(`📚 Swagger docs at ${domain}:${PORT}/docs`);
 });

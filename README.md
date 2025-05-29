@@ -98,6 +98,7 @@ backend/
 
    SENDGRID_API_KEY=...
    EMAIL_FROM=you@example.com
+    DOMAIN=http://localhost:3000
    ```
 
 4. **Ensure the `docs/openapi.yaml`** file is present (API spec for Swagger UI).
@@ -145,6 +146,7 @@ This uses **Swagger UI** and your OpenAPI 3.0 spec (`docs/openapi.yaml`).
 | `CLOUDINARY_API_SECRET` | Your Cloudinary API secret                    |
 | `SENDGRID_API_KEY`      | (Optional) SendGrid API key for email sending |
 | `EMAIL_FROM`            | (Optional) Default sender email address       |
+| `DOMAIN`                | required (default to https://localhost        |
 
 ---
 
