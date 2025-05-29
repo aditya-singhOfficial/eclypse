@@ -93,7 +93,8 @@ components:
         items:
           type: array
           items:
-            $ref: '#/components/schemas/CartItem'    Order:
+            $ref: '#/components/schemas/CartItem'
+    Order:
       type: object
       properties:
         _id:
@@ -1225,27 +1226,6 @@ paths:  # AUTH ROUTES
           description: Review not found
 
   # ADMIN ROUTES
-  /api/auth/admin/me:
-    get:
-      tags:
-        - Admin Authentication
-      summary: Get admin user details
-      security:
-        - bearerAuth: []
-      responses:
-        '200':
-          description: Admin user details retrieved successfully
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  user:
-                    $ref: '#/components/schemas/User'
-        '401':
-          description: Unauthorized
-        '403':
-          description: Forbidden - Admin access required
 
   /api/admin/stats:
     get:
@@ -1349,71 +1329,8 @@ paths:  # AUTH ROUTES
         '403':
           description: Forbidden - Admin access required
 
-  /api/users/{userId}/assign-admin:
-    put:
-      tags:
-        - Admin User Management
-      summary: Assign admin role to a user
-      security:
-        - bearerAuth: []
-      parameters:
-        - name: userId
-          in: path
-          required: true
-          schema:
-            type: string
-          description: User ID to assign admin role
-      responses:
-        '200':
-          description: Admin role assigned successfully
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-                  user:
-                    $ref: '#/components/schemas/User'
-        '401':
-          description: Unauthorized
-        '403':
-          description: Forbidden - Admin access required
-        '404':
-          description: User not found
 
-  /api/users/{userId}/revoke-admin:
-    put:
-      tags:
-        - Admin User Management
-      summary: Revoke admin role from a user
-      security:
-        - bearerAuth: []
-      parameters:
-        - name: userId
-          in: path
-          required: true
-          schema:
-            type: string
-          description: User ID to revoke admin role
-      responses:
-        '200':
-          description: Admin role revoked successfully
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-                  user:
-                    $ref: '#/components/schemas/User'
-        '401':
-          description: Unauthorized
-        '403':
-          description: Forbidden - Admin access required
-        '404':
-          description: User not found
+
 
   /api/orders/admin/all:
     get:
