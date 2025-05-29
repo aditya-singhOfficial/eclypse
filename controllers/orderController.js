@@ -49,3 +49,15 @@ export const deleteOrder = async (req, res, next) => {
         next(err);
     }
 };
+
+export const getMyOrder = async (req, res, next) => {
+    try {
+        const order = await orderSvc.fetchUserOrderById(req.user.id, req.params.id);
+        if (!order) {
+            return res.status(404).json({ message: 'Order not found' });
+        }
+        res.json(order);
+    } catch (err) {
+        next(err);
+    }
+};

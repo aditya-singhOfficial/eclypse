@@ -4,6 +4,7 @@ import {
     createOrder,
     deleteOrder,
     getOrder,
+    getMyOrder,
     listMyOrders,
     listOrders,
     updateOrderStatus
@@ -14,6 +15,7 @@ const router = express.Router();
 
 router.post('/', protect, createOrder);
 router.get('/my', protect, listMyOrders);
+router.get('/my/:id', protect, getMyOrder);
 
 router.use(protect, authorize('admin'));
 router.get('/', listOrders);

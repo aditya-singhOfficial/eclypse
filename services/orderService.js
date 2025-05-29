@@ -18,9 +18,10 @@ export const createOrder = async (userId, paymentInfo) => {
     return order;
 };
 
-export const fetchOrders = () => Order.find().populate('user', 'name');
-export const fetchOrderById = id => Order.findById(id).populate('user', 'name').populate('items.product');
-export const fetchUserOrders = userId => Order.find({user: userId});
+export const fetchOrders = () => Order.find().populate('user', 'name email');
+export const fetchOrderById = id => Order.findById(id).populate('user', 'name email').populate('items.product');
+export const fetchUserOrders = userId => Order.find({user: userId}).populate('items.product').sort({createdAt: -1});
+export const fetchUserOrderById = (userId, orderId) => Order.findOne({_id: orderId, user: userId}).populate('items.product');
 export const updateOrderStatus = (id, status) =>
     Order.findByIdAndUpdate(id, {status}, {new: true});
 export const deleteOrder = id => Order.findByIdAndDelete(id);
