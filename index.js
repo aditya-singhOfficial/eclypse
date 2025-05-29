@@ -4,12 +4,23 @@ import cors from "cors";
 import {mongooseConnection} from "./config/mongoose.js";
 import authRoutes from "./routes/Authentication.js";
 import productRoutes from "./routes/productRoutes.js";
+import path from "path"
+
+
+import swaggerUi from 'swagger-ui-express';
+import YAML from 'yamljs';
+import {errorHandler} from './middlewares/errorHandler.js';
+
 
 const app = express();
 const port = process.env.PORT || 3000;
+const spec = YAML.load(path.join(process.cwd(), 'docs', 'openapi.yaml'));
+
 
 app.use(cors());
 app.use(express.json());
+app.use('/docs', swaggerUi.serve, swaggerUi.setup(spec));
+app.use(errorHandler);
 
 await mongooseConnection();
 
@@ -34,4 +45,6 @@ app.use((req, res) => {
 
 app.listen(port, () => {
     console.log(`Server is running on http://localhost:${port}`);
+    console.log(`Swagger UI docs: http://localhost:${port}/docs`);
+
 });
