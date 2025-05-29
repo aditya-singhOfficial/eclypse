@@ -1,7 +1,7 @@
 import React from "react";
 import { useLocation, Navigate } from "react-router-dom";
 import CheckoutPage from "./CheckoutPage";
-import { useCart } from "../../context/CartContext";
+import { useCart } from "../../context/useCart";
 
 const CheckoutComponent: React.FC = () => {
   const location = useLocation();

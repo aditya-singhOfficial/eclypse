@@ -1,30 +1,30 @@
 import React, { createContext, useState, useEffect } from 'react';
+import { ordersAPI } from '../services/api';
+import { useAuth } from './useAuth';
 import type { CartItem } from './CartContext';
 import type { OrderStatus } from '../types/orderTypes';
 import { ORDER_STATUS } from '../types/orderTypes';
 
-// Define interfaces for orders
 export interface OrderAddress {
   firstName: string;
   lastName: string;
   street: string;
   apt?: string;
-  state: string;
-  zip: string;
+  city: string;
+  postalCode: string;
+  country: string;
 }
 
 export interface OrderPayment {
   paymentMethod: 'card' | 'cod';
-  cardNumber?: string;
-  expiry?: string;
   last4?: string;
+  cardType?: string;
 }
 
 export interface Order {
   id: string;
   items: CartItem[];
-  itemName: string;
-  itemPrice: number;
+  subtotal: number;
   shipping: number;
   tax: number;
   total: number;
@@ -34,7 +34,7 @@ export interface Order {
   createdAt: Date;
   estimatedDelivery: Date;
   trackingId?: string;
-  trackingEvents?: {
+  trackingEvents: {
     status: string;
     timestamp: Date;
     location?: string;
@@ -42,108 +42,210 @@ export interface Order {
   }[];
 }
 
-interface OrderContextType {
-  orders: Order[];
-  addOrder: (order: Omit<Order, 'id' | 'createdAt' | 'estimatedDelivery' | 'status' | 'trackingEvents'>) => string;
-  getOrder: (id: string) => Order | undefined;
-  getOrderByTrackingId: (trackingId: string) => Order | undefined;
+interface ApiOrderItem {
+  _id: string;
+  product: { _id: string; name: string; price: number; image: string };
+  quantity: number;
 }
 
-// Create the context
+interface ApiOrder {
+  _id: string;
+  orderItems: ApiOrderItem[];
+  shippingAddress: {
+    fullName: string;
+    address: string;
+    city: string;
+    postalCode: string;
+    country: string;
+  };
+  paymentMethod: 'card' | 'cod';
+  paymentResult?: {
+    last4: string;
+    cardType: string;
+  };
+  itemsPrice: number;
+  taxPrice: number;
+  shippingPrice: number;
+  totalPrice: number;
+  status: string;
+  createdAt: string;
+}
+
+interface ApiError {
+  response?: { data?: { message?: string } };
+  message?: string;
+}
+
+interface OrderContextType {
+  orders: Order[];
+  addOrder(
+    orderData: Omit<
+      Order,
+      'id' | 'createdAt' | 'estimatedDelivery' | 'status' | 'trackingEvents'
+    >
+  ): Promise<string>;
+  getOrder(id: string): Order | undefined;
+  getOrderByTrackingId(trackingId: string): Order | undefined;
+  isLoading: boolean;
+  error: string | null;
+}
+
 const OrderContext = createContext<OrderContextType | undefined>(undefined);
 
-export const OrderProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {// Initialize orders from localStorage if available
-  const [orders, setOrders] = useState<Order[]>(() => {
-    const savedOrders = localStorage.getItem('orders');
-    if (savedOrders) {
-      const parsedOrders = JSON.parse(savedOrders);
-      // Convert string dates back to Date objects
-      return parsedOrders.map((order: Omit<Order, 'createdAt' | 'estimatedDelivery' | 'trackingEvents'> & {
-        createdAt: string;
-        estimatedDelivery: string;
-        trackingEvents?: {
-          status: string;
-          timestamp: string;
-          location?: string;
-          description?: string;
-        }[];
-      }) => ({
-        ...order,
-        createdAt: new Date(order.createdAt),
-        estimatedDelivery: new Date(order.estimatedDelivery),
-        trackingEvents: order.trackingEvents?.map((event) => ({
-          ...event,
-          timestamp: new Date(event.timestamp)
-        }))
-      }));
+export const OrderProvider: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const { isAuthenticated } = useAuth();
+
+  const mapStatus = (status: string): OrderStatus => {
+    switch (status.toLowerCase()) {
+      case 'pending':
+        return ORDER_STATUS.PLACED;
+      case 'processing':
+        return ORDER_STATUS.PROCESSING;
+      case 'shipped':
+        return ORDER_STATUS.SHIPPED;
+      case 'delivered':
+        return ORDER_STATUS.DELIVERED;
+      default:
+        return ORDER_STATUS.PLACED;
     }
-    return [];
-  });
+  };
 
-  // Save orders to localStorage when they change
-  useEffect(() => {
-    localStorage.setItem('orders', JSON.stringify(orders));
-  }, [orders]);
+  const convertApiOrder = (api: ApiOrder): Order => {
+    const items: CartItem[] = api.orderItems.map((i) => ({
+      id: i._id,
+      productId: i.product._id,
+      name: i.product.name,
+      price: i.product.price,
+      image: i.product.image,
+      quantity: i.quantity,
+    }));
 
-  // Add a new order
-  const addOrder = (orderData: Omit<Order, 'id' | 'createdAt' | 'estimatedDelivery' | 'status' | 'trackingEvents'>) => {
-    // Generate a random order ID
-    const orderId = `ORD-${Math.floor(100000 + Math.random() * 900000)}`;
-    
-    // Generate a random tracking ID
-    const trackingId = `TRK${Math.floor(1000000000 + Math.random() * 9000000000)}`;
-    
-    // Create timestamp for order
-    const createdAt = new Date();
-    
-    // Calculate estimated delivery (5-7 business days from now)
-    const estimatedDelivery = new Date();
-    estimatedDelivery.setDate(estimatedDelivery.getDate() + 5 + Math.floor(Math.random() * 3));
-      // Initial tracking event
-    const trackingEvents = [
-      {
-        status: ORDER_STATUS.PLACED,
-        timestamp: new Date(),
-        location: 'Online',
-        description: 'Order has been placed successfully.'
-      }
-    ];
-    
-    // Create the complete order object
-    const newOrder: Order = {
-      ...orderData,
-      id: orderId,
-      status: ORDER_STATUS.PLACED,
+    const createdAt = new Date(api.createdAt);
+    const estimatedDelivery = new Date(createdAt);
+    estimatedDelivery.setDate(createdAt.getDate() + 6);
+
+    const [firstName, lastName] = api.shippingAddress.fullName.split(' ');
+
+    return {
+      id: api._id,
+      items,
+      subtotal: api.itemsPrice,
+      shipping: api.shippingPrice,
+      tax: api.taxPrice,
+      total: api.totalPrice,
+      shippingAddress: {
+        firstName,
+        lastName: lastName || '',
+        street: api.shippingAddress.address,
+        city: api.shippingAddress.city,
+        postalCode: api.shippingAddress.postalCode,
+        country: api.shippingAddress.country,
+      },
+      payment: {
+        paymentMethod: api.paymentMethod,
+        ...(api.paymentResult && {
+          last4: api.paymentResult.last4,
+          cardType: api.paymentResult.cardType,
+        }),
+      },
+      status: mapStatus(api.status),
       createdAt,
       estimatedDelivery,
-      trackingId,
-      trackingEvents
+      trackingId: `TRK${Date.now()}`,
+      trackingEvents: [
+        {
+          status: api.status,
+          timestamp: createdAt,
+          location: 'Online',
+          description: `Order ${api.status}`,
+        },
+      ],
     };
-    
-    // Add to orders state
-    setOrders(prevOrders => [...prevOrders, newOrder]);
-    
-    return orderId;
   };
 
-  // Get a specific order by ID
-  const getOrder = (id: string) => {
-    return orders.find(order => order.id === id);
+  useEffect(() => {
+    const fetchOrders = async () => {
+      if (!isAuthenticated) return;
+      try {
+        setIsLoading(true);
+        const res = await ordersAPI.listMine();
+        const data: ApiOrder[] = res.data;
+        setOrders(data.map(convertApiOrder));
+      } catch (err: unknown) {
+        const e = err as ApiError;
+        setError(e.response?.data?.message || e.message || 'Failed to fetch orders');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchOrders();
+  }, [isAuthenticated]);
+
+  useEffect(() => {
+    if (!isAuthenticated) {
+      localStorage.setItem('guestOrders', JSON.stringify(orders));
+    }
+  }, [orders, isAuthenticated]);
+
+  const addOrder = async (
+    data: Omit<Order, 'id' | 'createdAt' | 'estimatedDelivery' | 'status' | 'trackingEvents'>
+  ): Promise<string> => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      if (isAuthenticated) {
+        const payload = {
+          orderItems: data.items.map((i) => ({ product: i.productId, quantity: i.quantity })),
+          shippingAddress: {
+            fullName: `${data.shippingAddress.firstName} ${data.shippingAddress.lastName}`.trim(),
+            address: data.shippingAddress.street,
+            city: data.shippingAddress.city,
+            postalCode: data.shippingAddress.postalCode,
+            country: data.shippingAddress.country,
+          },
+          paymentMethod: data.payment.paymentMethod,
+        };
+        const res = await ordersAPI.place(payload);
+        const order = convertApiOrder(res.data as ApiOrder);
+        setOrders((prev) => [...prev, order]);
+        return order.id;
+      } else {
+        const id = `ORD-${Date.now()}`;
+        const createdAt = new Date();
+        const estimatedDelivery = new Date(createdAt);
+        estimatedDelivery.setDate(createdAt.getDate() + 6);
+        const newOrder: Order = {
+          ...data,
+          id,
+          status: ORDER_STATUS.PLACED,
+          createdAt,
+          estimatedDelivery,
+          trackingId: `TRK${Date.now()}`,
+          trackingEvents: [{ status: ORDER_STATUS.PLACED, timestamp: createdAt }],
+        };
+        setOrders((prev) => [...prev, newOrder]);
+        return id;
+      }
+    } catch (err: unknown) {
+      const e = err as ApiError;
+      setError(e.response?.data?.message || e.message || 'Failed to place order');
+      throw err;
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  // Get a specific order by tracking ID
-  const getOrderByTrackingId = (trackingId: string) => {
-    return orders.find(order => order.trackingId === trackingId);
-  };
+  const getOrder = (id: string) => orders.find((o) => o.id === id);
+  const getOrderByTrackingId = (tid: string) => orders.find((o) => o.trackingId === tid);
 
   return (
     <OrderContext.Provider
-      value={{
-        orders,
-        addOrder,
-        getOrder,
-        getOrderByTrackingId
-      }}
+      value={{ orders, addOrder, getOrder, getOrderByTrackingId, isLoading, error }}
     >
       {children}
     </OrderContext.Provider>
@@ -151,3 +253,10 @@ export const OrderProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 };
 
 export default OrderContext;
+export const useOrder = (): OrderContextType => {
+  const context = React.useContext(OrderContext);
+  if (!context) {
+    throw new Error('useOrder must be used within an OrderProvider');
+  }
+  return context;
+};

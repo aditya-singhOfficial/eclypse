@@ -1,15 +1,34 @@
-import React from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useCart } from "../context/CartContext";
+import { useCart } from "../context/useCart";
 import { motion } from "framer-motion";
 
 const Cart: React.FC = () => {
-  const { cartItems, removeFromCart, updateQuantity, subtotal } = useCart();
+  const { cartItems, removeFromCart, updateQuantity, subtotal, isLoading, error } = useCart();
   const navigate = useNavigate();
+  const [itemLoading, setItemLoading] = useState<string | null>(null);
   
   const shipping = 1400; // Standard shipping cost
   const tax = 200; // Standard tax amount
   const total = subtotal + shipping + tax;
+
+  const handleRemoveItem = async (id: string) => {
+    setItemLoading(id);
+    try {
+      await removeFromCart(id);
+    } finally {
+      setItemLoading(null);
+    }
+  };
+
+  const handleUpdateQuantity = async (id: string, quantity: number) => {
+    setItemLoading(id);
+    try {
+      await updateQuantity(id, quantity);
+    } finally {
+      setItemLoading(null);
+    }
+  };
 
   const handleCheckout = () => {
     if (cartItems.length === 0) return;
@@ -69,8 +88,7 @@ const Cart: React.FC = () => {
 
   return (
     <div className="bg-black text-white min-h-screen py-24 sm:py-28 md:py-32 lg:py-36 px-4 sm:px-6 md:px-12 lg:px-16">
-      <div className="w-full max-w-7xl mx-auto">
-        <motion.h1 
+      <div className="w-full max-w-7xl mx-auto">        <motion.h1 
           className="text-xl md:text-4xl font-medium mb-12"
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -78,6 +96,20 @@ const Cart: React.FC = () => {
         >
           Shopping Cart
         </motion.h1>
+        
+        {/* Error message */}
+        {error && (
+          <div className="bg-red-900 text-white p-4 mb-6 rounded-md">
+            <p>{error}</p>
+          </div>
+        )}
+        
+        {/* Global loading indicator */}
+        {isLoading && !itemLoading && (
+          <div className="text-center py-4 mb-6 bg-zinc-900 rounded-md">
+            <p className="text-blue-400">Loading cart...</p>
+          </div>
+        )}
         
         {cartItems.length === 0 ? (
           <motion.div 
@@ -124,11 +156,13 @@ const Cart: React.FC = () => {
                     <p className="text-gray-300 mt-1">₹{item.price.toLocaleString()}</p>
                     {item.selectedSize && (
                       <p className="text-gray-400 text-sm mt-1">Size: {item.selectedSize}</p>
-                    )}
-                    <div className="flex items-center mt-4">
+                    )}                    <div className="flex items-center mt-4">
                       <button 
-                        onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                        className="w-8 h-8 flex items-center justify-center border border-gray-600 hover:border-white transition-colors"
+                        onClick={() => handleUpdateQuantity(item.id, item.quantity - 1)}
+                        disabled={itemLoading === item.id || isLoading}
+                        className={`w-8 h-8 flex items-center justify-center border border-gray-600 hover:border-white transition-colors ${
+                          itemLoading === item.id || isLoading ? 'opacity-50 cursor-not-allowed' : ''
+                        }`}
                       >
                         -
                       </button>
@@ -136,16 +170,22 @@ const Cart: React.FC = () => {
                         {item.quantity}
                       </span>
                       <button 
-                        onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                        className="w-8 h-8 flex items-center justify-center border border-gray-600 hover:border-white transition-colors"
+                        onClick={() => handleUpdateQuantity(item.id, item.quantity + 1)}
+                        disabled={itemLoading === item.id || isLoading}
+                        className={`w-8 h-8 flex items-center justify-center border border-gray-600 hover:border-white transition-colors ${
+                          itemLoading === item.id || isLoading ? 'opacity-50 cursor-not-allowed' : ''
+                        }`}
                       >
                         +
                       </button>
                       <button 
-                        onClick={() => removeFromCart(item.id)}
-                        className="ml-6 text-gray-400 hover:text-white transition-colors text-sm"
+                        onClick={() => handleRemoveItem(item.id)}
+                        disabled={itemLoading === item.id || isLoading}
+                        className={`ml-6 text-gray-400 hover:text-white transition-colors text-sm ${
+                          itemLoading === item.id || isLoading ? 'opacity-50 cursor-not-allowed' : ''
+                        }`}
                       >
-                        Remove
+                        {itemLoading === item.id ? 'Removing...' : 'Remove'}
                       </button>
                     </div>
                   </div>
@@ -180,16 +220,21 @@ const Cart: React.FC = () => {
                     <span>Total</span>
                     <span>₹{total.toLocaleString()}</span>
                   </div>
-                </div>
-                <button 
+                </div>                <button 
                   onClick={handleCheckout}
-                  className="w-full bg-white text-black hover:bg-[#f63030] hover:text-white font-medium py-3 transition-colors"
+                  disabled={isLoading || cartItems.length === 0}
+                  className={`w-full bg-white text-black hover:bg-[#f63030] hover:text-white font-medium py-3 transition-colors ${
+                    isLoading || cartItems.length === 0 ? 'opacity-50 cursor-not-allowed' : ''
+                  }`}
                 >
-                  Checkout
+                  {isLoading ? 'Loading...' : 'Checkout'}
                 </button>
                 <button 
                   onClick={() => navigate("/products")}
-                  className="w-full mt-4 border border-white text-white hover:bg-white hover:text-black font-medium py-3 transition-colors"
+                  disabled={isLoading}
+                  className={`w-full mt-4 border border-white text-white hover:bg-white hover:text-black font-medium py-3 transition-colors ${
+                    isLoading ? 'opacity-50 cursor-not-allowed' : ''
+                  }`}
                 >
                   Continue Shopping
                 </button>

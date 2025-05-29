@@ -3,12 +3,14 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import LogoIcon from '../assets/logo.jpg';
 import ViewTransitionLink from './ViewTransitionLink';
-import { useCart } from '../context/CartContext';
+import { useCart } from '../context/useCart';
+import { useAuth } from '../context/useAuth';
 
 const Navbar: React.FC = () => {
     const [scrolled, setScrolled] = useState(false);
     const navigate = useNavigate();
     const { totalItems } = useCart();
+    const { user, isAuthenticated, logout } = useAuth();
 
     useEffect(() => {
         const onScroll = () => setScrolled(window.scrollY > 50);
@@ -66,9 +68,7 @@ const Navbar: React.FC = () => {
                                 {totalItems}
                             </span>
                         )}
-                    </ViewTransitionLink>
-
-                    <button
+                    </ViewTransitionLink>                    <button
                         onClick={() => navigate('/products')}
                         className={`
               text-2xl font-bold px-3 py-1.5 rounded-md transition-transform
@@ -80,6 +80,40 @@ const Navbar: React.FC = () => {
                     >
                         Shop
                     </button>
+
+                    {isAuthenticated ? (
+                        <div className="flex items-center space-x-4">
+                            <span className="text-white/70 text-sm">Hi, {user?.name}</span>
+                            <button
+                                onClick={() => {
+                                    logout();
+                                    navigate('/');
+                                }}
+                                className={`
+                                    text-md font-semibold px-3 py-1.5 rounded-md transition-transform
+                                    ${scrolled
+                                        ? 'bg-red-500/90 text-white hover:bg-red-500'
+                                        : 'bg-red-500 text-white hover:bg-red-500/90'}
+                                    transform hover:scale-105
+                                `}
+                            >
+                                Logout
+                            </button>
+                        </div>
+                    ) : (
+                        <button
+                            onClick={() => navigate('/login')}
+                            className={`
+                                text-md font-semibold px-3 py-1.5 rounded-md transition-transform
+                                ${scrolled
+                                    ? 'bg-indigo-500/90 text-white hover:bg-indigo-500'
+                                    : 'bg-indigo-500 text-white hover:bg-indigo-500/90'}
+                                transform hover:scale-105
+                            `}
+                        >
+                            Login
+                        </button>
+                    )}
                 </nav>
             </div>
         </header>

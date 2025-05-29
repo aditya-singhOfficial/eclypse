@@ -1,65 +1,9 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { useCart } from "../context/CartContext";
+import { useCart } from "../context/useCart";
 import { motion } from "framer-motion";
-
-// Dummy product data for demonstration. Replace with real API/data fetching.
-const PRODUCTS = [
-  {
-    id: "1",
-    name: "Silhouette No. 1 – Vermilion",
-    price: 7999,
-    images: [
-      "/home/product/asset_1.png",
-      "/home/product/asset_2.png",
-      "/home/product/asset_3.png",
-    ],
-    description:
-      "A tailored composition in motion. Cut from structured wool with a sculpted shoulder and softened hem, this piece captures presence without force.",
-    details: [
-      "Premium wool blend in signature vermilion",
-      "Discreet side pockets with clean finish",
-      "Hand-cut and assembled in small batches",
-      "Dry clean only",
-    ],
-  },
-  {
-    id: "2",
-    name: "Silhouette No. 2 – Azure",
-    price: 8999,
-    images: [
-      "/home/product/asset_2.png",
-      "/home/product/asset_1.png",
-      "/home/product/asset_3.png",
-    ],
-    description:
-      "Azure blue, modern fit, premium wool blend with immaculate tailoring for a confident, composed silhouette in any setting.",
-    details: [
-      "Premium wool blend in azure blue",
-      "Tailored fit with modern proportions",
-      "Hand-finished details",
-      "Dry clean only",
-    ],
-  },
-  {
-    id: "3",
-    name: "Silhouette No. 3 – Charcoal",
-    price: 9999,
-    images: [
-      "/home/product/asset_3.png",
-      "/home/product/asset_1.png",
-      "/home/product/asset_2.png",
-    ],
-    description:
-      "Charcoal grey, classic cut, luxury finish with exceptional detail. Urban sophistication meets timeless craftsmanship.",
-    details: [
-      "Premium wool blend in charcoal grey",
-      "Classic cut with contemporary details",
-      "Meticulously crafted construction",
-      "Dry clean only",
-    ],
-  },
-];
+import { productsAPI, handleApiError } from "../services/api";
+import type { Product } from "../types/productTypes";
 
 const Product: React.FC = () => {
   const { id } = useParams();
@@ -67,14 +11,73 @@ const Product: React.FC = () => {
   const { addToCart } = useCart();
   const [selectedSize, setSelectedSize] = useState<string | null>(null);
   const [mainImage, setMainImage] = useState<number>(0);
-  const product = PRODUCTS.find((p) => p.id === id);
+  const [product, setProduct] = useState<Product | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  if (!product)
+  // Fetch product from backend
+  useEffect(() => {
+    const fetchProduct = async () => {
+      if (!id) return;
+      
+      try {
+        setLoading(true);
+        setError(null);
+        const response = await productsAPI.getProductById(id);
+        setProduct(response.data);      } catch (err: unknown) {
+        setError(handleApiError(err));
+        console.error('Error fetching product:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProduct();
+  }, [id]);
+
+  if (loading) {
     return (
       <div className="min-h-screen bg-black text-white flex items-center justify-center py-24 sm:py-28 md:py-32 lg:py-36">
-        Product not found.
+        <div className="w-16 h-16 border-t-4 border-[#f63030] border-solid rounded-full animate-spin"></div>
       </div>
     );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-black text-white flex items-center justify-center py-24 sm:py-28 md:py-32 lg:py-36">
+        <div className="text-center">
+          <p className="text-red-400 text-lg mb-4">Failed to load product</p>
+          <p className="text-gray-400 mb-4">{error}</p>
+          <button 
+            onClick={() => nav('/products')}
+            className="px-6 py-2 border border-white text-white hover:bg-white hover:text-black transition-colors"
+          >
+            Back to Products
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (!product) {
+    return (
+      <div className="min-h-screen bg-black text-white flex items-center justify-center py-24 sm:py-28 md:py-32 lg:py-36">
+        <div className="text-center">
+          <p className="text-gray-400 text-lg mb-4">Product not found</p>
+          <button 
+            onClick={() => nav('/products')}
+            className="px-6 py-2 border border-white text-white hover:bg-white hover:text-black transition-colors"
+          >
+            Back to Products
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // Use product images if available, otherwise fallback to single image
+  const productImages = product.images && product.images.length > 0 ? product.images : [product.image];
 
   const handleBuyNow = () => {
     nav("/checkout", {
@@ -88,14 +91,12 @@ const Product: React.FC = () => {
         selectedSize,
       },
     });
-  };
-
-  const handleAddToCart = () => {
+  };  const handleAddToCart = () => {
     addToCart({
-      id: product.id,
+      productId: product._id,
       name: product.name,
       price: product.price,
-      image: product.images[0],
+      image: productImages[0],
       selectedSize,
     });
 
@@ -113,15 +114,14 @@ const Product: React.FC = () => {
           transition={{ duration: 0.6 }}
         >
           {/* Left column - images */}
-          <div className="w-full md:w-1/2 space-y-4">
-            <motion.div
+          <div className="w-full md:w-1/2 space-y-4">            <motion.div
               className="overflow-hidden rounded-lg"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.2 }}
             >
               <img
-                src={product.images[mainImage]}
+                src={productImages[mainImage]}
                 alt={product.name}
                 className="w-full h-[500px] object-cover"
               />
@@ -133,7 +133,7 @@ const Product: React.FC = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.4 }}
             >
-              {product.images.map((img, i) => (
+              {productImages.map((img, i) => (
                 <div
                   key={i}
                   className={`cursor-pointer overflow-hidden rounded-lg border-2 ${
@@ -169,20 +169,22 @@ const Product: React.FC = () => {
               transition={{ duration: 0.6, delay: 0.3 }}
             >
               {product.description}
-            </motion.p>
-
-            <motion.div
+            </motion.p>            <motion.div
               className="space-y-3"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 0.6, delay: 0.4 }}
             >
-              <h3 className="text-lg font-medium">Details</h3>
-              <ul className="list-disc pl-5 text-sm text-gray-300 space-y-1">
-                {product.details.map((detail, index) => (
-                  <li key={index}>{detail}</li>
-                ))}
-              </ul>
+              {product.details && product.details.length > 0 && (
+                <>
+                  <h3 className="text-lg font-medium">Details</h3>
+                  <ul className="list-disc pl-5 text-sm text-gray-300 space-y-1">
+                    {product.details.map((detail, index) => (
+                      <li key={index}>{detail}</li>
+                    ))}
+                  </ul>
+                </>
+              )}
             </motion.div>
 
             <motion.div

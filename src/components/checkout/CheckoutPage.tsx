@@ -4,7 +4,7 @@ import OrderSummary from "./OrderSummary";
 import AddressForm from "./AddressForm";
 import PaymentForm from "./PaymentForm";
 import { motion } from "framer-motion";
-import { useCart } from "../../context/CartContext";
+import { useCart } from "../../context/useCart";
 import { useOrder } from "../../context/useOrder";
 
 interface CheckoutPageProps {
