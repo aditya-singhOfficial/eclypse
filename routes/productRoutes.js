@@ -1,54 +1,22 @@
+// routes/productRoutes.js
 import express from 'express';
 import {
     addProduct,
-    getProducts,
+    deleteProduct,
     getProductById,
-    updateProduct,
-    deleteProduct
+    getProducts,
+    updateProduct
 } from '../controllers/productController.js';
-import { upload } from '../middlewares/upload.js';
-import { protect, authorize } from '../middlewares/auth.js';
+import {authorize, protect} from '../middlewares/auth.js';
+import {upload} from '../middlewares/upload.js';
 
 const router = express.Router();
 
-// Create
-router.post(
-    '/',
-    protect,
-    authorize('admin'),
-    upload,
-    addProduct
-);
+router.get('/', getProducts);
+router.get('/:id', getProductById);
 
-// Read all
-router.get(
-    '/',
-    protect,
-    getProducts
-);
-
-// Read one
-router.get(
-    '/:id',
-    protect,
-    getProductById
-);
-
-// Update
-router.put(
-    '/:id',
-    protect,
-    authorize('admin'),
-    upload,            // optional: if updating images
-    updateProduct
-);
-
-// Delete
-router.delete(
-    '/:id',
-    protect,
-    authorize('admin'),
-    deleteProduct
-);
+router.post('/', protect, authorize('admin'), upload, addProduct);
+router.put('/:id', protect, authorize('admin'), upload, updateProduct);
+router.delete('/:id', protect, authorize('admin'), deleteProduct);
 
 export default router;

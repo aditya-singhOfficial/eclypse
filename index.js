@@ -1,50 +1,46 @@
-import "dotenv/config";
-import express from "express";
-import cors from "cors";
-import {mongooseConnection} from "./config/mongoose.js";
-import authRoutes from "./routes/Authentication.js";
-import productRoutes from "./routes/productRoutes.js";
-import path from "path"
+// server.js
+import 'dotenv/config';
+import express from 'express';
+import cors from 'cors';
 
-
-import swaggerUi from 'swagger-ui-express';
-import YAML from 'yamljs';
+import {mongooseConnection} from './config/mongoose.js';
+import {swaggerUiServe, swaggerUiSetup} from './config/swagger.js';
 import {errorHandler} from './middlewares/errorHandler.js';
 
+import authRoutes from './routes/authRoutes.js';
+import userRoutes from './routes/userRoutes.js';
+import categoryRoutes from './routes/categoryRoutes.js';
+import productRoutes from './routes/productRoutes.js';
+import cartRoutes from './routes/cartRoutes.js';
+import orderRoutes from './routes/orderRoutes.js';
+import reviewRoutes from './routes/reviewRoutes.js';
 
-const app = express();
-const port = process.env.PORT || 3000;
-const spec = YAML.load(path.join(process.cwd(), 'docs', 'openapi.yaml'));
-
-
-app.use(cors());
-app.use(express.json());
-app.use('/docs', swaggerUi.serve, swaggerUi.setup(spec));
-app.use(errorHandler);
+const PORT = process.env.PORT || 3000;
 
 await mongooseConnection();
 
-app.get("/", (req, res) => {
-    res.status(200).json({
-        message: "Welcome to the API",
-        version: "1.0.0",
-        documentation: "https://example.com/docs"
-    });
-});
+const app = express();
+app.use(cors());
+app.use(express.json());
 
-app.use("/api/auth", authRoutes);
+// 1️⃣ Mount your API routes
+app.use('/api/auth', authRoutes);
+app.use('/api/users', userRoutes);
+app.use('/api/categories', categoryRoutes);
 app.use('/api/products', productRoutes);
+app.use('/api/cart', cartRoutes);
+app.use('/api/orders', orderRoutes);
+// nested reviews under products:
+app.use('/api/products/:id/reviews', reviewRoutes);
 
+// 2️⃣ Mount Swagger UI (after all your routes)
+app.use('/docs', swaggerUiServe, swaggerUiSetup);
 
-app.use((req, res) => {
-    res.status(404).json({
-        message: "Not Found",
-        status: 404
-    });
-});
+// 3️⃣ Centralized error handling
+app.use(errorHandler);
 
-app.listen(port, () => {
-    console.log(`Server is running on http://localhost:${port}`);
-    console.log(`Swagger UI docs: http://localhost:${port}/docs`);
-
+// 4️⃣ Start server
+app.listen(PORT, () => {
+    console.log(`🚀 Server running at http://localhost:${PORT}`);
+    console.log(`📚 Swagger docs at http://localhost:${PORT}/docs`);
 });

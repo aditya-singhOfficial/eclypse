@@ -16,50 +16,80 @@ components:
       type: http
       scheme: bearer
       bearerFormat: JWT
-
   schemas:
     User:
       type: object
       properties:
-        _id:      { type: string, format: uuid }
-        name:     { type: string }
-        email:    { type: string, format: email }
-        role:     { type: string, enum: [user, admin] }
-        createdAt:{ type: string, format: date-time }
-        updatedAt:{ type: string, format: date-time }
+        _id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        email:
+          type: string
+          format: email
+        role:
+          type: string
+          enum: [user, admin]
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
     Category:
       type: object
       properties:
-        _id:      { type: string }
-        name:     { type: string }
+        _id:
+          type: string
+        name:
+          type: string
     Product:
       type: object
       properties:
-        _id:        { type: string }
-        name:       { type: string }
-        description:{ type: string }
-        price:      { type: number, format: float }
-        category:   { $ref: '#/components/schemas/Category' }
+        _id:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        price:
+          type: number
+          format: float
+        category:
+          $ref: '#/components/schemas/Category'
         images:
           type: array
           items:
             type: object
             properties:
-              url:       { type: string, format: uri }
-              public_id: { type: string }
-        createdBy:  { $ref: '#/components/schemas/User' }
-        createdAt:  { type: string, format: date-time }
-        updatedAt:  { type: string, format: date-time }
+              url:
+                type: string
+                format: uri
+              public_id:
+                type: string
+        createdBy:
+          $ref: '#/components/schemas/User'
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
     CartItem:
       type: object
       properties:
-        _id:      { type: string }
-        product:  { $ref: '#/components/schemas/Product' }
-        quantity: { type: integer }
+        _id:
+          type: string
+        product:
+          $ref: '#/components/schemas/Product'
+        quantity:
+          type: integer
     Cart:
       type: object
       properties:
-        user:  { type: string }
+        user:
+          type: string
         items:
           type: array
           items:
@@ -67,133 +97,253 @@ components:
     Order:
       type: object
       properties:
-        _id:       { type: string }
-        user:      { $ref: '#/components/schemas/User' }
+        _id:
+          type: string
+        user:
+          $ref: '#/components/schemas/User'
         items:
           type: array
           items:
             type: object
             properties:
-              product:  { $ref: '#/components/schemas/Product' }
-              quantity: { type: integer }
-              price:    { type: number }
-        totalPrice:{ type: number }
-        status:    { type: string }
+              product:
+                $ref: '#/components/schemas/Product'
+              quantity:
+                type: integer
+              price:
+                type: number
+        totalPrice:
+          type: number
+        status:
+          type: string
         paymentInfo:
           type: object
-        createdAt: { type: string }
-        updatedAt: { type: string }
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
     Review:
       type: object
       properties:
-        _id:      { type: string }
-        product:  { type: string }
-        user:     { $ref: '#/components/schemas/User' }
-        rating:   { type: integer, minimum: 1, maximum: 5 }
-        comment:  { type: string }
-        createdAt:{ type: string }
-        updatedAt:{ type: string }
+        _id:
+          type: string
+        product:
+          type: string
+        user:
+          $ref: '#/components/schemas/User'
+        rating:
+          type: integer
+          minimum: 1
+          maximum: 5
+        comment:
+          type: string
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
 
 security:
   - bearerAuth: []
 
 paths:
-
+  # AUTH ROUTES
   /api/auth/register:
     post:
-      summary: Register new user
-      tags: [Auth]
+      tags:
+        - Authentication
+      summary: Register a new user
       requestBody:
         required: true
         content:
           application/json:
             schema:
               type: object
-              required: [name,email,password]
+              required:
+                - name
+                - email
+                - password
               properties:
-                name:     { type: string }
-                email:    { type: string, format: email }
-                password: { type: string, minLength: 6 }
+                name:
+                  type: string
+                  example: "John Doe"
+                email:
+                  type: string
+                  format: email
+                  example: "johndoe@example.com"
+                password:
+                  type: string
+                  format: password
+                  example: "password123"
       responses:
-        201:
-          description: Created
+        '201':
+          description: User created successfully
           content:
             application/json:
               schema:
                 type: object
                 properties:
-                  user:  { $ref: '#/components/schemas/User' }
-                  token: { type: string }
-
+                  user:
+                    $ref: '#/components/schemas/User'
+                  token:
+                    type: string
+        '400':
+          description: Bad request
+  
   /api/auth/login:
     post:
-      summary: Login
-      tags: [Auth]
+      tags:
+        - Authentication
+      summary: Login existing user
       requestBody:
         required: true
         content:
           application/json:
             schema:
               type: object
-              required: [email,password]
+              required:
+                - email
+                - password
               properties:
-                email:    { type: string, format: email }
-                password: { type: string }
+                email:
+                  type: string
+                  format: email
+                  example: "johndoe@example.com"
+                password:
+                  type: string
+                  format: password
+                  example: "password123"
       responses:
-        200:
-          description: OK
+        '200':
+          description: Login successful
           content:
             application/json:
               schema:
                 type: object
                 properties:
-                  user:  { $ref: '#/components/schemas/User' }
-                  token: { type: string }
+                  user:
+                    $ref: '#/components/schemas/User'
+                  token:
+                    type: string
+        '401':
+          description: Invalid credentials
 
-  /api/users/profile:
+  # USER ROUTES
+  /api/users:
     get:
-      summary: Get current user profile
-      tags: [Users]
+      tags:
+        - Users
+      summary: Get all users (admin only)
       security:
         - bearerAuth: []
       responses:
-        200:
+        '200':
+          description: A list of users
           content:
             application/json:
-              schema: { $ref: '#/components/schemas/User' }
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/User'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden - Admin access required
+  
+  /api/users/{id}:
+    get:
+      tags:
+        - Users
+      summary: Get user by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: User details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '404':
+          description: User not found
+    
     put:
-      summary: Update current user
-      tags: [Users]
+      tags:
+        - Users
+      summary: Update user
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
       security:
         - bearerAuth: []
       requestBody:
+        required: true
         content:
           application/json:
             schema:
               type: object
               properties:
-                name:  { type: string }
-                email: { type: string, format: email }
+                name:
+                  type: string
+                email:
+                  type: string
+                  format: email
       responses:
-        200:
+        '200':
+          description: User updated successfully
           content:
             application/json:
-              schema: { $ref: '#/components/schemas/User' }
+              schema:
+                $ref: '#/components/schemas/User'
+        '404':
+          description: User not found
+    
+    delete:
+      tags:
+        - Users
+      summary: Delete user
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: User deleted successfully
+        '404':
+          description: User not found
 
+  # CATEGORY ROUTES
   /api/categories:
     get:
-      summary: List categories
-      tags: [Categories]
+      tags:
+        - Categories
+      summary: Get all categories
       responses:
-        200:
+        '200':
+          description: A list of categories
           content:
             application/json:
               schema:
                 type: array
-                items: { $ref: '#/components/schemas/Category' }
+                items:
+                  $ref: '#/components/schemas/Category'
+    
     post:
-      summary: Create category (admin)
-      tags: [Categories]
+      tags:
+        - Categories
+      summary: Create a new category (admin only)
       security:
         - bearerAuth: []
       requestBody:
@@ -202,321 +352,652 @@ paths:
           application/json:
             schema:
               type: object
-              required: [name]
+              required:
+                - name
               properties:
-                name: { type: string }
+                name:
+                  type: string
+                  example: "Electronics"
       responses:
-        201:
+        '201':
+          description: Category created successfully
           content:
             application/json:
-              schema: { $ref: '#/components/schemas/Category' }
+              schema:
+                $ref: '#/components/schemas/Category'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden - Admin access required
 
   /api/categories/{id}:
-    parameters:
-      - in: path
-        name: id
-        required: true
-        schema: { type: string }
     get:
-      summary: Get category
-      tags: [Categories]
+      tags:
+        - Categories
+      summary: Get category by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
       responses:
-        200:
+        '200':
+          description: Category details
           content:
             application/json:
-              schema: { $ref: '#/components/schemas/Category' }
+              schema:
+                $ref: '#/components/schemas/Category'
+        '404':
+          description: Category not found
+    
     put:
-      summary: Update category (admin)
-      tags: [Categories]
+      tags:
+        - Categories
+      summary: Update category (admin only)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
       security:
         - bearerAuth: []
       requestBody:
+        required: true
         content:
           application/json:
             schema:
               type: object
               properties:
-                name: { type: string }
+                name:
+                  type: string
+                  example: "Home Electronics"
       responses:
-        200:
+        '200':
+          description: Category updated successfully
           content:
             application/json:
-              schema: { $ref: '#/components/schemas/Category' }
+              schema:
+                $ref: '#/components/schemas/Category'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden - Admin access required
+        '404':
+          description: Category not found
+    
     delete:
-      summary: Delete category (admin)
-      tags: [Categories]
+      tags:
+        - Categories
+      summary: Delete category (admin only)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
       security:
         - bearerAuth: []
       responses:
-        204:
-          description: No Content
+        '200':
+          description: Category deleted successfully
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden - Admin access required
+        '404':
+          description: Category not found
 
+  # PRODUCT ROUTES
   /api/products:
     get:
-      summary: List products
-      tags: [Products]
+      tags:
+        - Products
+      summary: Get all products
       parameters:
-        - in: query
-          name: category
-          schema: { type: string }
-        - in: query
-          name: search
-          schema: { type: string }
-        - in: query
-          name: page
-          schema: { type: integer }
-        - in: query
-          name: limit
-          schema: { type: integer }
+        - name: category
+          in: query
+          schema:
+            type: string
+          description: Filter by category ID
+        - name: limit
+          in: query
+          schema:
+            type: integer
+          description: Limit the number of results
+        - name: page
+          in: query
+          schema:
+            type: integer
+          description: Page number for pagination
       responses:
-        200:
+        '200':
+          description: A list of products
           content:
             application/json:
               schema:
-                type: array
-                items: { $ref: '#/components/schemas/Product' }
+                type: object
+                properties:
+                  products:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Product'
+                  total:
+                    type: integer
+                  page:
+                    type: integer
+                  pages:
+                    type: integer
+    
     post:
-      summary: Create product (admin)
-      tags: [Products]
+      tags:
+        - Products
+      summary: Create a new product (admin only)
       security:
         - bearerAuth: []
       requestBody:
+        required: true
         content:
-          multipart/form-data:
+          application/json:
             schema:
               type: object
-              required: [name,price,category]
+              required:
+                - name
+                - description
+                - price
+                - category
               properties:
-                name:        { type: string }
-                description: { type: string }
-                price:       { type: number }
-                category:    { type: string }
+                name:
+                  type: string
+                  example: "Smartphone X"
+                description:
+                  type: string
+                  example: "Latest smartphone with advanced features"
+                price:
+                  type: number
+                  example: 999.99
+                category:
+                  type: string
+                  example: "64abc1234fed56789"
                 images:
                   type: array
                   items:
-                    type: string
-                    format: binary
+                    type: object
+                    properties:
+                      url:
+                        type: string
+                      public_id:
+                        type: string
       responses:
-        201:
+        '201':
+          description: Product created successfully
           content:
             application/json:
-              schema: { $ref: '#/components/schemas/Product' }
+              schema:
+                $ref: '#/components/schemas/Product'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden - Admin access required
 
   /api/products/{id}:
-    parameters:
-      - in: path
-        name: id
-        required: true
-        schema: { type: string }
     get:
-      summary: Get product
-      tags: [Products]
+      tags:
+        - Products
+      summary: Get product by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
       responses:
-        200:
+        '200':
+          description: Product details
           content:
             application/json:
-              schema: { $ref: '#/components/schemas/Product' }
+              schema:
+                $ref: '#/components/schemas/Product'
+        '404':
+          description: Product not found
+    
     put:
-      summary: Update product (admin)
-      tags: [Products]
+      tags:
+        - Products
+      summary: Update product (admin only)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
       security:
         - bearerAuth: []
       requestBody:
+        required: true
         content:
-          multipart/form-data:
+          application/json:
             schema:
               type: object
               properties:
-                name:        { type: string }
-                description: { type: string }
-                price:       { type: number }
-                category:    { type: string }
+                name:
+                  type: string
+                description:
+                  type: string
+                price:
+                  type: number
+                category:
+                  type: string
                 images:
                   type: array
                   items:
-                    type: string
-                    format: binary
+                    type: object
+                    properties:
+                      url:
+                        type: string
+                      public_id:
+                        type: string
       responses:
-        200:
+        '200':
+          description: Product updated successfully
           content:
             application/json:
-              schema: { $ref: '#/components/schemas/Product' }
+              schema:
+                $ref: '#/components/schemas/Product'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden - Admin access required
+        '404':
+          description: Product not found
+    
     delete:
-      summary: Delete product (admin)
-      tags: [Products]
+      tags:
+        - Products
+      summary: Delete product (admin only)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
       security:
         - bearerAuth: []
       responses:
-        204:
-          description: No Content
+        '200':
+          description: Product deleted successfully
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden - Admin access required
+        '404':
+          description: Product not found
 
+  # CART ROUTES
   /api/cart:
     get:
-      summary: Get current user’s cart
-      tags: [Cart]
+      tags:
+        - Cart
+      summary: Get user's cart
       security:
         - bearerAuth: []
       responses:
-        200:
+        '200':
+          description: User's cart
           content:
             application/json:
-              schema: { $ref: '#/components/schemas/Cart' }
+              schema:
+                $ref: '#/components/schemas/Cart'
+        '401':
+          description: Unauthorized
+    
     post:
+      tags:
+        - Cart
       summary: Add item to cart
-      tags: [Cart]
       security:
         - bearerAuth: []
       requestBody:
+        required: true
         content:
           application/json:
             schema:
               type: object
-              required: [productId]
+              required:
+                - productId
+                - quantity
               properties:
-                productId: { type: string }
-                quantity:  { type: integer, default: 1 }
+                productId:
+                  type: string
+                  example: "64def4567abc12345"
+                quantity:
+                  type: integer
+                  example: 1
       responses:
-        200:
+        '200':
+          description: Item added to cart
           content:
             application/json:
-              schema: { $ref: '#/components/schemas/Cart' }
+              schema:
+                $ref: '#/components/schemas/Cart'
+        '401':
+          description: Unauthorized
+        '404':
+          description: Product not found
+
+  /api/cart/{itemId}:
     put:
-      summary: Update cart item
-      tags: [Cart]
+      tags:
+        - Cart
+      summary: Update cart item quantity
+      parameters:
+        - name: itemId
+          in: path
+          required: true
+          schema:
+            type: string
       security:
         - bearerAuth: []
-      parameters:
-        - in: query
-          name: itemId
-          required: true
-          schema: { type: string }
       requestBody:
+        required: true
         content:
           application/json:
             schema:
               type: object
+              required:
+                - quantity
               properties:
-                quantity: { type: integer }
+                quantity:
+                  type: integer
+                  example: 2
       responses:
-        200:
+        '200':
+          description: Cart item updated
           content:
             application/json:
-              schema: { $ref: '#/components/schemas/Cart' }
+              schema:
+                $ref: '#/components/schemas/Cart'
+        '401':
+          description: Unauthorized
+        '404':
+          description: Cart item not found
+    
     delete:
-      summary: Clear cart
-      tags: [Cart]
-      security:
-        - bearerAuth: []
-      responses:
-        204:
-          description: No Content
-
-  /api/orders:
-    post:
-      summary: Create order
-      tags: [Orders]
-      security:
-        - bearerAuth: []
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                paymentInfo: { type: object }
-      responses:
-        201:
-          content:
-            application/json:
-              schema: { $ref: '#/components/schemas/Order' }
-    get:
-      summary: List all orders (admin)
-      tags: [Orders]
-      security:
-        - bearerAuth: []
-      responses:
-        200:
-          content:
-            application/json:
-              schema:
-                type: array
-                items: { $ref: '#/components/schemas/Order' }
-
-  /api/orders/my:
-    get:
-      summary: Get my orders
-      tags: [Orders]
-      security:
-        - bearerAuth: []
-      responses:
-        200:
-          content:
-            application/json:
-              schema:
-                type: array
-                items: { $ref: '#/components/schemas/Order' }
-
-  /api/orders/{id}/status:
-    put:
-      summary: Update order status (admin)
-      tags: [Orders]
-      security:
-        - bearerAuth: []
+      tags:
+        - Cart
+      summary: Remove item from cart
       parameters:
-        - in: path
-          name: id
+        - name: itemId
+          in: path
           required: true
-          schema: { type: string }
+          schema:
+            type: string
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Item removed from cart
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Cart'
+        '401':
+          description: Unauthorized
+        '404':
+          description: Cart item not found
+
+  # ORDER ROUTES
+  /api/orders:
+    get:
+      tags:
+        - Orders
+      summary: Get all orders (admin) or user's orders
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: List of orders
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Order'
+        '401':
+          description: Unauthorized
+    
+    post:
+      tags:
+        - Orders
+      summary: Create a new order
+      security:
+        - bearerAuth: []
       requestBody:
+        required: true
         content:
           application/json:
             schema:
               type: object
+              required:
+                - paymentInfo
               properties:
-                status: { type: string }
+                paymentInfo:
+                  type: object
+                  example: {
+                    "id": "pi_123456789",
+                    "status": "paid"
+                  }
       responses:
-        200:
+        '201':
+          description: Order created successfully
           content:
             application/json:
-              schema: { $ref: '#/components/schemas/Order' }
+              schema:
+                $ref: '#/components/schemas/Order'
+        '400':
+          description: Bad request
+        '401':
+          description: Unauthorized
 
+  /api/orders/{id}:
+    get:
+      tags:
+        - Orders
+      summary: Get order by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Order details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Order'
+        '401':
+          description: Unauthorized
+        '404':
+          description: Order not found
+    
+    put:
+      tags:
+        - Orders
+      summary: Update order status (admin only)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - status
+              properties:
+                status:
+                  type: string
+                  enum: [processing, shipped, delivered, cancelled]
+      responses:
+        '200':
+          description: Order updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Order'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden - Admin access required
+        '404':
+          description: Order not found
+
+  # REVIEW ROUTES
   /api/products/{id}/reviews:
     get:
-      summary: List reviews for product
-      tags: [Reviews]
+      tags:
+        - Reviews
+      summary: Get all reviews for a product
       parameters:
-        - in: path
-          name: id
+        - name: id
+          in: path
           required: true
-          schema: { type: string }
+          schema:
+            type: string
       responses:
-        200:
+        '200':
+          description: List of reviews
           content:
             application/json:
               schema:
                 type: array
-                items: { $ref: '#/components/schemas/Review' }
+                items:
+                  $ref: '#/components/schemas/Review'
+        '404':
+          description: Product not found
+    
     post:
-      summary: Add review
-      tags: [Reviews]
+      tags:
+        - Reviews
+      summary: Create a new review for a product
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
       security:
         - bearerAuth: []
-      parameters:
-        - in: path
-          name: id
-          required: true
-          schema: { type: string }
       requestBody:
+        required: true
         content:
           application/json:
             schema:
               type: object
-              required: [rating]
+              required:
+                - rating
               properties:
-                rating:  { type: integer, minimum: 1, maximum: 5 }
-                comment: { type: string }
+                rating:
+                  type: integer
+                  minimum: 1
+                  maximum: 5
+                  example: 4
+                comment:
+                  type: string
+                  example: "Great product, very satisfied!"
       responses:
-        201:
+        '201':
+          description: Review created successfully
           content:
             application/json:
-              schema: { $ref: '#/components/schemas/Review' }
+              schema:
+                $ref: '#/components/schemas/Review'
+        '400':
+          description: Bad request
+        '401':
+          description: Unauthorized
+        '404':
+          description: Product not found
+
+  /api/products/{productId}/reviews/{reviewId}:
+    put:
+      tags:
+        - Reviews
+      summary: Update a review
+      parameters:
+        - name: productId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: reviewId
+          in: path
+          required: true
+          schema:
+            type: string
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                rating:
+                  type: integer
+                  minimum: 1
+                  maximum: 5
+                comment:
+                  type: string
+      responses:
+        '200':
+          description: Review updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Review'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden - Not the owner of the review
+        '404':
+          description: Review not found
+    
+    delete:
+      tags:
+        - Reviews
+      summary: Delete a review
+      parameters:
+        - name: productId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: reviewId
+          in: path
+          required: true
+          schema:
+            type: string
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Review deleted successfully
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden - Not the owner of the review or not an admin
+        '404':
+          description: Review not found
