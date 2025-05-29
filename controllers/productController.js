@@ -1,58 +1,43 @@
-import {
-    createProduct,
-    fetchProducts,
-    fetchProductById,
-    modifyProduct,
-    removeProduct
-} from '../services/productService.js';
+// controllers/productController.js
+import * as prodSvc from '../services/productService.js';
 
-export async function addProduct(req, res) {
+export const addProduct = async (req, res, next) => {
     try {
-        const product = await createProduct(req.body, req.files, req.user.id);
-        res.status(201).json(product);
+        res.status(201).json(await prodSvc.createProduct(req.body, req.files, req.user.id));
     } catch (err) {
-        res.status(500).json({ message: err.message });
+        next(err);
     }
-}
+};
 
-export async function getProducts(req, res) {
+export const getProducts = async (_, res, next) => {
     try {
-        const products = await fetchProducts();
-        res.json(products);
+        res.json(await prodSvc.fetchProducts());
     } catch (err) {
-        res.status(500).json({ message: err.message });
+        next(err);
     }
-}
+};
 
-export async function getProductById(req, res) {
+export const getProductById = async (req, res, next) => {
     try {
-        const product = await fetchProductById(req.params.id);
-        if (!product) return res.status(404).json({ message: 'Not Found' });
-        res.json(product);
+        res.json(await prodSvc.fetchProductById(req.params.id));
     } catch (err) {
-        res.status(500).json({ message: err.message });
+        next(err);
     }
-}
+};
 
-export async function updateProduct(req, res) {
+export const updateProduct = async (req, res, next) => {
     try {
-        const product = await modifyProduct(
-            req.params.id,
-            req.body,
-            req.files,
-            req.user.id
-        );
-        res.json(product);
+        res.json(await prodSvc.modifyProduct(req.params.id, req.body, req.files));
     } catch (err) {
-        res.status(500).json({ message: err.message });
+        next(err);
     }
-}
+};
 
-export async function deleteProduct(req, res) {
+export const deleteProduct = async (req, res, next) => {
     try {
-        await removeProduct(req.params.id);
-        res.json({ message: 'Product deleted successfully' });
+        await prodSvc.removeProduct(req.params.id);
+        res.json({});
     } catch (err) {
-        res.status(500).json({ message: err.message });
+        next(err);
     }
-}
+};
