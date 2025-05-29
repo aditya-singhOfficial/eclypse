@@ -32,8 +32,7 @@ const Navbar: React.FC = () => {
                 </ViewTransitionLink>
 
                 {/* Navigation */}
-                <nav className="flex flex-wrap items-center space-x-4 md:space-x-8">
-                    <ViewTransitionLink
+                <nav className="flex flex-wrap items-center space-x-4 md:space-x-8">                    <ViewTransitionLink
                         to="/products"
                         className={`
                 text-white text-md md:text-xl font-semibold hover:text-gray-100 transition-colors
@@ -41,6 +40,16 @@ const Navbar: React.FC = () => {
               `}
                     >
                         Products
+                    </ViewTransitionLink>
+                    
+                    <ViewTransitionLink
+                        to="/order-history"
+                        className={`
+                text-white text-md md:text-xl font-semibold hover:text-gray-100 transition-colors
+                ${scrolled ? 'text-white/90' : 'text-white/70'}
+              `}
+                    >
+                        Orders
                     </ViewTransitionLink>
                     
                     {/* Cart with count */}

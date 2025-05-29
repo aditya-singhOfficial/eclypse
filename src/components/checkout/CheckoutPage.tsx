@@ -5,6 +5,7 @@ import AddressForm from "./AddressForm";
 import PaymentForm from "./PaymentForm";
 import { motion } from "framer-motion";
 import { useCart } from "../../context/CartContext";
+import { useOrder } from "../../context/useOrder";
 
 interface CheckoutPageProps {
   order: {
@@ -37,12 +38,13 @@ type PaymentFormData = {
   cvv?: string;
 };
 
-const CheckoutPage: React.FC<CheckoutPageProps> = ({ order }) => {
-  const [currentStep, setCurrentStep] = useState<CheckoutStep>("address");
+const CheckoutPage: React.FC<CheckoutPageProps> = ({ order }) => {  const [currentStep, setCurrentStep] = useState<CheckoutStep>("address");
   const [shippingAddress, setShippingAddress] = useState<AddressFormData | null>(null);
-  const [paymentInfo, setPaymentInfo] = useState<PaymentFormData | null>(null);  const [isProcessingPayment, setIsProcessingPayment] = useState<boolean>(false);
+  const [paymentInfo, setPaymentInfo] = useState<PaymentFormData | null>(null);
+  const [isProcessingPayment, setIsProcessingPayment] = useState<boolean>(false);
   const navigate = useNavigate();
-  const { clearCart } = useCart();
+  const { cartItems, clearCart } = useCart();
+  const { addOrder } = useOrder();
 
   const handleAddressSubmit = (data: AddressFormData) => {
     setShippingAddress(data);
@@ -57,22 +59,41 @@ const CheckoutPage: React.FC<CheckoutPageProps> = ({ order }) => {
       // Simulate payment processing delay
       setTimeout(() => {
         setIsProcessingPayment(false);
+        
+        // Create the payment object with proper credit card masking
+        const payment = {
+          paymentMethod: data.paymentMethod,
+          last4: data.cardNumber ? data.cardNumber.replace(/\s/g, '').slice(-4) : undefined,
+          cardNumber: data.cardNumber ? `XXXX XXXX XXXX ${data.cardNumber.replace(/\s/g, '').slice(-4)}` : undefined,
+          expiry: data.expiry
+        };
+        
+        // Save the order to our order context
+        const newOrderId = addOrder({
+          items: cartItems,
+          itemName: order.itemName,
+          itemPrice: order.itemPrice,
+          shipping: order.shipping,
+          tax: order.tax,
+          total: order.total,
+          shippingAddress: shippingAddress!,
+          payment: payment
+        });
+        
         // After successful payment, move to confirmation
         setCurrentStep("confirmation");
         
         // Simulate backend processing delay
         setTimeout(() => {
           clearCart();
-          navigate("/"); 
+          navigate(`/order-confirmation/${newOrderId}`);
         }, 2000);
       }, 1500); // Simulate payment gateway delay
     } else {
       // For COD, move to review step
       setCurrentStep("payment-review");
     }
-  };
-
-  const handlePlaceOrder = () => {
+  };  const handlePlaceOrder = () => {
     // Check if we have address and payment information
     if (!shippingAddress) {
       setCurrentStep("address");
@@ -84,18 +105,33 @@ const CheckoutPage: React.FC<CheckoutPageProps> = ({ order }) => {
       return;
     }
     
-    // In a real app, here we would:
-    // 1. Process payment if using card
-    // 2. Save order details to backend
-    // 3. Clear the cart on success
+    // Create the payment object
+    const payment = {
+      paymentMethod: paymentInfo.paymentMethod,
+      last4: paymentInfo.cardNumber ? paymentInfo.cardNumber.replace(/\s/g, '').slice(-4) : undefined,
+      cardNumber: paymentInfo.cardNumber ? `XXXX XXXX XXXX ${paymentInfo.cardNumber.replace(/\s/g, '').slice(-4)}` : undefined,
+      expiry: paymentInfo.expiry
+    };
+    
+    // Save the order to our order context
+    const newOrderId = addOrder({
+      items: cartItems,
+      itemName: order.itemName,
+      itemPrice: order.itemPrice,
+      shipping: order.shipping,
+      tax: order.tax,
+      total: order.total,
+      shippingAddress: shippingAddress,
+      payment: payment
+    });
     
     setCurrentStep("confirmation");
     
     // Simulate backend processing delay
     setTimeout(() => {
-      // Clear cart and redirect to home after order placement
+      // Clear cart and redirect to order confirmation page
       clearCart();
-      navigate("/"); 
+      navigate(`/order-confirmation/${newOrderId}`);
     }, 2000);
   };
   const stepsConfig = [
@@ -240,8 +276,7 @@ const CheckoutPage: React.FC<CheckoutPageProps> = ({ order }) => {
               </div>
             </>
           )}
-          
-          {currentStep === "confirmation" && (
+            {currentStep === "confirmation" && (
             <>
               <h1 className="text-xl md:text-4xl font-medium mb-8">Order Confirmation</h1>
               <div className="bg-gray-900 border border-gray-800 p-8">
@@ -253,53 +288,7 @@ const CheckoutPage: React.FC<CheckoutPageProps> = ({ order }) => {
                   </div>
                   <h2 className="text-2xl font-medium mb-4">Thank You For Your Order!</h2>
                   <p className="text-gray-300 mb-4">Your order has been placed successfully.</p>
-                  <p className="text-gray-300 mb-8">Order ID: {Math.floor(100000 + Math.random() * 900000)}</p>
-                </div>
-                
-                {shippingAddress && (
-                  <div className="border-t border-gray-800 pt-6 mb-6">
-                    <h3 className="font-medium mb-2">Shipping Information:</h3>
-                    <p className="text-gray-300">{shippingAddress.firstName} {shippingAddress.lastName}</p>
-                    <p className="text-gray-300">{shippingAddress.street}{shippingAddress.apt ? `, Apt ${shippingAddress.apt}` : ''}</p>
-                    <p className="text-gray-300">{shippingAddress.state}, {shippingAddress.zip}</p>
-                  </div>
-                )}
-                
-                {paymentInfo && (
-                  <div className="border-t border-gray-800 pt-6 mb-6">
-                    <h3 className="font-medium mb-2">Payment Method:</h3>
-                    <p className="text-gray-300">
-                      {paymentInfo.paymentMethod === 'card' 
-                        ? `Credit/Debit Card (ending in ${paymentInfo.cardNumber?.slice(-4) || '****'})` 
-                        : 'Cash on Delivery'}
-                    </p>
-                  </div>
-                )}
-                
-                <div className="border-t border-gray-800 pt-6 mb-6">
-                  <h3 className="font-medium mb-2">Order Summary:</h3>
-                  <div className="flex justify-between mb-1">
-                    <span className="text-gray-300">Items:</span>
-                    <span className="text-gray-300">₹{order.itemPrice.toLocaleString()}</span>
-                  </div>
-                  <div className="flex justify-between mb-1">
-                    <span className="text-gray-300">Shipping:</span>
-                    <span className="text-gray-300">₹{order.shipping.toLocaleString()}</span>
-                  </div>
-                  <div className="flex justify-between mb-1">
-                    <span className="text-gray-300">Tax:</span>
-                    <span className="text-gray-300">₹{order.tax.toLocaleString()}</span>
-                  </div>
-                  <div className="flex justify-between font-medium">
-                    <span>Total:</span>
-                    <span>₹{order.total.toLocaleString()}</span>
-                  </div>
-                </div>
-                
-                <div className="text-center">
-                  <button onClick={() => navigate("/")} className="bg-white text-black hover:bg-[#f63030] hover:text-white px-8 py-3 transition-colors">
-                    Continue Shopping
-                  </button>
+                  <p className="text-gray-300 mb-8">Redirecting to order confirmation page...</p>
                 </div>
               </div>
             </>
