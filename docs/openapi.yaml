@@ -5,7 +5,7 @@ info:
   description: |
     Full-featured e-commerce backend with users, products, categories, carts, orders, and reviews.
 servers:
-  - url: https://api.example.com
+  - url: https://eclypse-vyeb.onrender.com
     description: Production
   - url: http://localhost:3000
     description: Local development
