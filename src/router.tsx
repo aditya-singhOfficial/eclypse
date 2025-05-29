@@ -11,7 +11,17 @@ import OrderDetails from "./pages/OrderDetails"
 import OrderConfirmation from "./pages/OrderConfirmation"
 import OrderTracking from "./pages/OrderTracking"
 import Login from "./pages/Login"
-import Register from "./pages/Register"
+import Register from "./pages/Register";
+import AdminLayout from "./admin/components/AdminLayout";
+import AdminDashboardPage from "./admin/pages/AdminDashboardPage";
+import AdminLoginPage from "./admin/pages/AdminLoginPage";
+import ProtectedRoute from "./admin/components/ProtectedRoute";
+import UserManagementPage from "./admin/pages/UserManagementPage";
+import ProductManagementPage from "./admin/pages/ProductManagementPage";
+import AddProductPage from "./admin/pages/AddProductPage";
+import EditProductPage from "./admin/pages/EditProductPage";
+import OrderManagementPage from "./admin/pages/OrderManagementPage";
+import AdminOrderDetailsPage from "./admin/pages/AdminOrderDetailsPage";
 
 const router = createBrowserRouter([
     {
@@ -69,6 +79,51 @@ const router = createBrowserRouter([
                 element: <ErrorPage />
             }
         ]
+    },
+    {
+        path: "/admin",
+        element: <ProtectedRoute />,
+        children: [
+            {
+                path: "", 
+                element: <AdminLayout />,
+                children: [
+                    {
+                        index: true, 
+                        element: <AdminDashboardPage />
+                    },
+                    {
+                        path: "users",
+                        element: <UserManagementPage />
+                    },
+                    {
+                        path: "products",
+                        element: <ProductManagementPage />
+                    },
+                    {
+                        path: "products/new",
+                        element: <AddProductPage />
+                    },
+                    {
+                        path: "products/edit/:productId",
+                        element: <EditProductPage />
+                    },
+                    {
+                        path: "orders",
+                        element: <OrderManagementPage />
+                    },
+                    {
+                        path: "orders/:orderId",
+                        element: <AdminOrderDetailsPage />
+                    }
+                    // Future admin sub-routes can be added here
+                ]
+            }
+        ]
+    },
+    {
+        path: "/admin/login",
+        element: <AdminLoginPage />
     }
 ])
 

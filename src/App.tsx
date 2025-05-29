@@ -13,18 +13,18 @@ const App: React.FC = () => {
 
     return (
         <AuthProvider>
-            <CartProvider>
-                <OrderProvider>
-                    <div className="flex flex-col min-h-screen bg-black text-white">
-                        {/* {!isHomePage && <Navbar />} */}
-                        <Navbar />
-                        <main className="flex-grow">
-                            <Outlet />
-                        </main>
-                        <Footer />
-                    </div>
-                </OrderProvider>
-            </CartProvider>
+        <CartProvider>
+            <OrderProvider>
+                <div className="flex flex-col min-h-screen bg-black text-white">
+                    {/* {!isHomePage && <Navbar />} */}
+                    <Navbar />
+                    <main className="flex-grow">
+                        <Outlet />
+                    </main>
+                    <Footer />
+                </div>
+            </OrderProvider>
+        </CartProvider>
         </AuthProvider>
     )
 }

@@ -3,28 +3,27 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useCart } from "../context/useCart";
 import { motion } from "framer-motion";
 import { productsAPI, handleApiError } from "../services/api";
-import type { Product } from "../types/productTypes";
+import type { Product as ProductType } from "../types/productTypes";
 
-const Product: React.FC = () => {
+const ProductPage: React.FC = () => {
   const { id } = useParams();
   const nav = useNavigate();
   const { addToCart } = useCart();
   const [selectedSize, setSelectedSize] = useState<string | null>(null);
   const [mainImage, setMainImage] = useState<number>(0);
-  const [product, setProduct] = useState<Product | null>(null);
+  const [product, setProduct] = useState<ProductType | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Fetch product from backend
   useEffect(() => {
     const fetchProduct = async () => {
       if (!id) return;
-      
       try {
         setLoading(true);
         setError(null);
-        const response = await productsAPI.getProductById(id);
-        setProduct(response.data);      } catch (err: unknown) {
+        const response = await productsAPI.getById(id);
+        setProduct(response.data);
+      } catch (err: unknown) {
         setError(handleApiError(err));
         console.error('Error fetching product:', err);
       } finally {
@@ -49,7 +48,7 @@ const Product: React.FC = () => {
         <div className="text-center">
           <p className="text-red-400 text-lg mb-4">Failed to load product</p>
           <p className="text-gray-400 mb-4">{error}</p>
-          <button 
+          <button
             onClick={() => nav('/products')}
             className="px-6 py-2 border border-white text-white hover:bg-white hover:text-black transition-colors"
           >
@@ -65,7 +64,7 @@ const Product: React.FC = () => {
       <div className="min-h-screen bg-black text-white flex items-center justify-center py-24 sm:py-28 md:py-32 lg:py-36">
         <div className="text-center">
           <p className="text-gray-400 text-lg mb-4">Product not found</p>
-          <button 
+          <button
             onClick={() => nav('/products')}
             className="px-6 py-2 border border-white text-white hover:bg-white hover:text-black transition-colors"
           >
@@ -76,7 +75,6 @@ const Product: React.FC = () => {
     );
   }
 
-  // Use product images if available, otherwise fallback to single image
   const productImages = product.images && product.images.length > 0 ? product.images : [product.image];
 
   const handleBuyNow = () => {
@@ -91,7 +89,9 @@ const Product: React.FC = () => {
         selectedSize,
       },
     });
-  };  const handleAddToCart = () => {
+  };
+
+  const handleAddToCart = () => {
     addToCart({
       productId: product._id,
       name: product.name,
@@ -100,7 +100,6 @@ const Product: React.FC = () => {
       selectedSize,
     });
 
-    // Show a success message
     alert(`${product.name} added to cart!`);
   };
 
@@ -114,7 +113,8 @@ const Product: React.FC = () => {
           transition={{ duration: 0.6 }}
         >
           {/* Left column - images */}
-          <div className="w-full md:w-1/2 space-y-4">            <motion.div
+          <div className="w-full md:w-1/2 space-y-4">
+            <motion.div
               className="overflow-hidden rounded-lg"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -205,7 +205,7 @@ const Product: React.FC = () => {
               <div className="space-y-2">
                 <h3 className="text-lg font-medium">Select Size</h3>
                 <div className="flex gap-3">
-                  {["XS", "S", "M", "L", "XL"].map((size) => (
+                  {['XS', 'S', 'M', 'L', 'XL'].map((size) => (
                     <button
                       key={size}
                       className={`w-12 h-12 flex items-center justify-center border transition-colors ${
@@ -249,4 +249,4 @@ const Product: React.FC = () => {
   );
 };
 
-export default Product;
+export default ProductPage;
